@@ -33,3 +33,18 @@
  */
 
 @import "./app/app.scss";
+
+/* Allow text selection for content text */
+ion-content p,
+ion-content h1,
+ion-content h2,
+ion-content h3,
+ion-content h4,
+ion-content h5,
+ion-content h6,
+ion-content ion-text,
+ion-content ion-label {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
