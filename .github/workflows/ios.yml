@@ -1,0 +1,66 @@
+name: Build source code on iOS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build_ios:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        id: install_code
+        run: npm ci
+
+      - name: Build
+        id: build_code
+        run: npm run build -- --configuration production
+
+      - uses: actions/cache@v3
+        with:
+          path: ios/App/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Sync
+        id: sync_code
+        run: npx cap sync
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: fastlane
+
+      - uses: maierj/fastlane-action@v3.1.0
+        env:
+          APP_STORE_CONNECT_TEAM_ID: ${{ secrets.APP_STORE_CONNECT_TEAM_ID }}
+          BUNDLE_IDENTIFIER: ${{ secrets.BUNDLE_IDENTIFIER }}
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
+          APPLE_ISSUER_ID: ${{ secrets.APPLE_ISSUER_ID }}
+          APPLE_KEY_CONTENT: ${{ secrets.APPLE_KEY_CONTENT }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          APPLE_PROFILE_NAME: ${{ secrets.APPLE_PROFILE_NAME }}
+        with:
+          lane: ios beta
+          subdirectory: fastlane
+
+      - name: Upload release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release
+          path: ./App.ipa
+          retention-days: 10
