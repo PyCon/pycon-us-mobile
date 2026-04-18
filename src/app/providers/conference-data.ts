@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { of, Observable } from 'rxjs';
-import { map, timeout, catchError } from 'rxjs/operators';
+import { map, timeout, catchError, shareReplay } from 'rxjs/operators';
 import { Storage } from '@ionic/storage-angular';
 import { ToastController } from '@ionic/angular';
 import markdownToTxt from 'markdown-to-txt';
@@ -14,6 +14,7 @@ import { environment } from '../../environments/environment';
 })
 export class ConferenceData {
   data: any;
+  private loadObservable: Observable<any> | null = null;
   slotColors: any = {
     plenary: 'primary',
     poster: 'tertiary',
@@ -63,62 +64,77 @@ export class ConferenceData {
 
   invalidateCache() {
     this.data = null;
+    this.loadObservable = null;
     this.storage.remove('schedule-cache');
   }
 
-  load(): any {
+  load(): Observable<any> {
     if (this.data) {
       return of(this.data);
-    } else {
-      return new Observable(observer => {
-        // Try cache first for instant render
-        this.storage.get('schedule-cache').then((cached) => {
-          if (cached) {
-            this.processData(cached);
-            observer.next(this.data);
-          }
+    }
 
-          // Then fetch from network
-          this.http
-            .get(`${environment.baseUrl}/2026/schedule/conference.json`)
-            .pipe(timeout(10000))
-            .subscribe({
-              next: (freshData) => {
-                this.data = null; // reset to reprocess
-                this.processData(freshData);
-                observer.next(this.data);
+    // If a load is already in flight, share it instead of creating a duplicate
+    if (this.loadObservable) {
+      return this.loadObservable;
+    }
+
+    this.loadObservable = new Observable(observer => {
+      // Try cache first for instant render
+      this.storage.get('schedule-cache').then((cached) => {
+        if (cached) {
+          this.processData(cached);
+          observer.next(this.data);
+        }
+
+        // Then fetch from network
+        this.http
+          .get(`${environment.baseUrl}/2026/schedule/conference.json`)
+          .pipe(timeout(10000))
+          .subscribe({
+            next: (freshData) => {
+              this.processData(freshData);
+              observer.next(this.data);
+              observer.complete();
+            },
+            error: (error) => {
+              console.log('Unable to load latest from remote, ' + error);
+              if (this.data) {
+                // Already served cache, just complete
                 observer.complete();
-              },
-              error: (error) => {
-                console.log('Unable to load latest from remote, ' + error);
-                if (this.data) {
-                  // Already served cache, just complete
-                  observer.complete();
-                } else {
-                  this.presentMessage('Unable to load schedule, no offline cache available');
-                  observer.error(error);
-                }
-              }
-            });
-        }).catch(() => {
-          // No cache, go straight to network
-          this.http
-            .get(`${environment.baseUrl}/2026/schedule/conference.json`)
-            .pipe(timeout(10000))
-            .subscribe({
-              next: (freshData) => {
-                this.processData(freshData);
-                observer.next(this.data);
-                observer.complete();
-              },
-              error: (error) => {
+              } else {
                 this.presentMessage('Unable to load schedule, no offline cache available');
                 observer.error(error);
               }
-            });
-        });
+            }
+          });
+      }).catch(() => {
+        // Storage read failed, go straight to network
+        this.http
+          .get(`${environment.baseUrl}/2026/schedule/conference.json`)
+          .pipe(timeout(10000))
+          .subscribe({
+            next: (freshData) => {
+              this.processData(freshData);
+              observer.next(this.data);
+              observer.complete();
+            },
+            error: (error) => {
+              this.presentMessage('Unable to load schedule, no offline cache available');
+              observer.error(error);
+            }
+          });
       });
-    }
+    }).pipe(
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+
+    // Clear the in-flight observable once it completes or errors
+    this.loadObservable.subscribe({
+      complete: () => { this.loadObservable = null; },
+      error: () => { this.loadObservable = null; },
+    });
+
+    return this.loadObservable;
   }
 
   processData(data: any) {

@@ -146,6 +146,7 @@ export class SchedulePage implements OnInit, OnDestroy {
     this.confData.getTimeline(this.dayIndex, this.queryText, this.excludeTracks, this.segment).subscribe((data: any) => {
       this.shownSessions = data.shownSessions;
       this.groups = data.groups;
+      this.hasData = true;
 
       if (this.segment === 'favorites' && this.shownSessions === 0) {
         this.checkFavoritesOnOtherDays();
