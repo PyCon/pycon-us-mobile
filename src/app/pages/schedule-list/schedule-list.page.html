@@ -37,7 +37,7 @@
       </ion-item-divider>
 
       <ion-list *ngIf="sessionsByDay[day]?.length > 0" lines="full">
-        <ion-item *ngFor="let session of sessionsByDay[day]" [hidden]="session.hide" detail="true" routerLink="/app/tabs/schedule/session/{{session.id}}" [attr.track]="session.track | lowercase" class="session-list-item">
+        <ion-item *ngFor="let session of sessionsByDay[day]" [hidden]="session.hide" detail="true" [routerLink]="['/app/tabs/schedule/session', session.id]" [queryParams]="{ prevUrl: '/app/tabs/tracks/' + trackSlug }" [attr.track]="session.track | lowercase" class="session-list-item">
           <ion-label>
             <h2 class="session-name">
               <ion-icon *ngIf="session.favorite" name="star" color="warning" style="font-size: 0.85em; margin-right: 4px;"></ion-icon>
@@ -91,7 +91,7 @@
       <ion-grid *ngIf="sessionsByDay[day]?.length > 0">
         <ion-row>
           <ion-col size-xl="6" size-md="6" size-sm="6" size-xs="12" *ngFor="let session of sessionsByDay[day]">
-            <ion-item class="ion-no-padding" lines="none" detail="false" routerLink="/app/tabs/schedule/session/{{session.id}}">
+            <ion-item class="ion-no-padding" lines="none" detail="false" [routerLink]="['/app/tabs/schedule/session', session.id]" [queryParams]="{ prevUrl: '/app/tabs/tracks/' + trackSlug }">
               <ion-card class="ion-no-padding ion-no-border ion-margin-bottom session-card">
                 <ion-card-header>
                   <ion-card-title class="session-card-title">

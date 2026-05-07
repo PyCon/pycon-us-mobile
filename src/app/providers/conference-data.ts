@@ -60,6 +60,21 @@ export class ConferenceData {
     return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
 
+  // Pretalx leaves cancelled-talk slots in the feed with name === kind,
+  // no description, and no speakers. The web schedule hides them; without
+  // this filter the mobile app shows a row literally titled "talk".
+  private isPlaceholderSlot(slot: any): boolean {
+    if (!slot || typeof slot.kind !== 'string') return false;
+    const name = typeof slot.name === 'string' ? slot.name.trim().toLowerCase() : '';
+    if (!name) return false;
+    if (name !== slot.kind.toLowerCase()) return false;
+    const hasDescription = typeof slot.description === 'string' && slot.description.trim() !== '';
+    if (hasDescription) return false;
+    const speakers = Array.isArray(slot.contact) ? slot.contact : [];
+    const authors = Array.isArray(slot.authors) ? slot.authors : [];
+    return speakers.length === 0 && authors.length === 0;
+  }
+
   constructor(
     public http: HttpClient,
     public user: UserData,
@@ -246,10 +261,16 @@ export class ConferenceData {
     // "available-open-space-slot") — backend emits these for every unbooked
     // open-space room/timeslot. They have no title, no track, null location,
     // and shouldn't appear on the schedule.
+    //
+    // And drop empty/cancelled session stubs — when a talk is cancelled the
+    // pretalx feed leaves the timeslot in place with name === kind ("talk",
+    // "charla", …), no description, no speakers. The web schedule hides
+    // these; we should too. See PYMOBIL-117.
     data.schedule = data.schedule.filter((slot: any) => {
       if (typeof slot.kind === 'string' && slot.kind.startsWith('available-open-space')) {
         return false;
       }
+      if (this.isPlaceholderSlot(slot)) return false;
       if (slot.kind !== 'plenary') return true;
       const cleanName = markdownToTxt(slot.name).replace(/\s*\([^)]*\)\s*$/, '').trim();
       return !/^posters?$/i.test(cleanName);

@@ -1,6 +1,8 @@
 import { Component, OnDestroy } from '@angular/core';
 import { InAppBrowser, DefaultWebViewOptions } from '@capacitor/inappbrowser';
 import { CapacitorCalendar } from '@ebarooni/capacitor-calendar';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { ModalController, Platform, ToastController } from '@ionic/angular';
 import { ConferenceData } from '../../providers/conference-data';
 import { ActivatedRoute } from '@angular/router';
@@ -166,7 +168,13 @@ export class SessionDetailPage implements OnDestroy {
   }
 
   ionViewDidEnter() {
-    this.defaultHref = `/app/tabs/schedule`;
+    // Honor a prevUrl query param so the back button returns to the page
+    // the user came from (e.g. /app/tabs/tracks/open-spaces, a speaker page,
+    // a room-detail page) rather than always dumping them on the schedule
+    // root. Matches speaker-detail / sponsor-detail behavior. Defaults to
+    // the schedule tab for deep-links and direct opens. See PYMOBIL-116.
+    this.defaultHref =
+      this.route.snapshot.queryParamMap.get('prevUrl') || '/app/tabs/schedule';
   }
 
   sessionClick(item: string) {
@@ -186,8 +194,8 @@ export class SessionDetailPage implements OnDestroy {
   async addToCalendar() {
     if (!this.session) return;
 
-    // Validate session timestamps up front; the native plugin and the Google
-    // Calendar URL fallback both produce broken results if these are NaN.
+    // Validate session timestamps up front; the native plugin and the .ics
+    // fallback both produce broken results if these are NaN.
     const startMs = new Date(this.session.startUtc).getTime();
     const endMs = new Date(this.session.endUtc).getTime();
     if (
@@ -207,55 +215,120 @@ export class SessionDetailPage implements OnDestroy {
     descriptionParts.push(sessionUrl);
     const description = descriptionParts.join('\n\n');
 
-    // On web/PWA the @ebarooni/capacitor-calendar plugin is a no-op and
-    // silently resolves, so jump straight to the Google Calendar fallback.
-    if (!this.platform.is('hybrid')) {
-      this.openGoogleCalendarFallback(startMs, endMs, description, sessionUrl);
+    // Native: hand the event to the OS calendar prompt so the user adds it
+    // to whatever calendar they've configured (iOS Calendar, Google
+    // Calendar on Android, etc.). If the prompt fails (permission denied,
+    // plugin error) fall through to the .ics share sheet so they can still
+    // open it in their preferred calendar app — never force Google.
+    if (this.platform.is('hybrid')) {
+      try {
+        await CapacitorCalendar.requestWriteOnlyCalendarAccess();
+        await CapacitorCalendar.createEventWithPrompt({
+          title: this.session.name,
+          location: this.session.location || '',
+          description,
+          startDate: startMs,
+          endDate: endMs,
+          isAllDay: false,
+          url: sessionUrl,
+        });
+        return;
+      } catch (err) {
+        console.error('Native calendar prompt failed, falling back to .ics', err);
+      }
+      try {
+        await this.shareIcs(startMs, endMs, description);
+      } catch (err) {
+        console.error('Sharing .ics failed', err);
+        await this.presentToast('Couldn’t open the calendar app');
+      }
       return;
     }
 
-    try {
-      await CapacitorCalendar.requestWriteOnlyCalendarAccess();
-      await CapacitorCalendar.createEventWithPrompt({
-        title: this.session.name,
-        location: this.session.location || '',
-        description,
-        startDate: startMs,
-        endDate: endMs,
-        isAllDay: false,
-        url: sessionUrl,
-      });
-    } catch (err) {
-      console.error('Native calendar prompt failed, falling back to web', err);
-      await this.presentToast('Opening Google Calendar instead…');
-      this.openGoogleCalendarFallback(startMs, endMs, description, sessionUrl);
-    }
+    // Web/PWA: trigger an .ics download. The browser/OS hands it to the
+    // user's default calendar app — Apple Calendar, Outlook, Google Cal,
+    // whatever they've registered for text/calendar.
+    this.downloadIcs(startMs, endMs, description);
   }
 
-  private openGoogleCalendarFallback(
-    startMs: number,
-    endMs: number,
-    description: string,
-    _sessionUrl: string,
-  ) {
-    const dates = `${this.formatGoogleCalendarDate(new Date(startMs))}/${this.formatGoogleCalendarDate(new Date(endMs))}`;
-    const params = [
-      'action=TEMPLATE',
-      `text=${encodeURIComponent(this.session.name || '')}`,
-      `dates=${dates}`,
-      `details=${encodeURIComponent(description)}`,
-      `location=${encodeURIComponent(this.session.location || '')}`,
-    ].join('&');
-    const url = `https://calendar.google.com/calendar/render?${params}`;
-    window.open(url, '_system');
+  private buildIcs(startMs: number, endMs: number, description: string): string {
+    const stamp = this.formatIcsDate(new Date());
+    const sessionId = this.session?.id ?? 'unknown';
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//PyCon US//Mobile App//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `UID:pycon-2026-${sessionId}@us.pycon.org`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART:${this.formatIcsDate(new Date(startMs))}`,
+      `DTEND:${this.formatIcsDate(new Date(endMs))}`,
+      `SUMMARY:${this.escapeIcsText(this.session?.name || '')}`,
+      `LOCATION:${this.escapeIcsText(this.session?.location || '')}`,
+      `DESCRIPTION:${this.escapeIcsText(description)}`,
+      `URL:${this.escapeIcsText(environment.baseUrl + '/2026/schedule/presentation/' + sessionId + '/')}`,
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ];
+    // ICS requires CRLF line endings.
+    return lines.join('\r\n') + '\r\n';
   }
 
-  private formatGoogleCalendarDate(date: Date): string {
+  private escapeIcsText(value: string): string {
+    return value
+      .replace(/\\/g, '\\\\')
+      .replace(/\r\n|\n|\r/g, '\\n')
+      .replace(/,/g, '\\,')
+      .replace(/;/g, '\\;');
+  }
+
+  private formatIcsDate(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0');
     return (
       `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}` +
       `T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`
     );
+  }
+
+  private icsFilename(): string {
+    const slug = String(this.session?.name || 'pycon-session')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'pycon-session';
+    return `${slug}.ics`;
+  }
+
+  private downloadIcs(startMs: number, endMs: number, description: string) {
+    const ics = this.buildIcs(startMs, endMs, description);
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = this.icsFilename();
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  private async shareIcs(startMs: number, endMs: number, description: string) {
+    const ics = this.buildIcs(startMs, endMs, description);
+    const filename = this.icsFilename();
+    const writeResult = await Filesystem.writeFile({
+      path: filename,
+      data: ics,
+      directory: Directory.Cache,
+      encoding: Encoding.UTF8,
+    });
+    await Share.share({
+      title: this.session?.name || 'PyCon Session',
+      text: this.session?.name || 'PyCon Session',
+      url: writeResult.uri,
+      dialogTitle: 'Add to calendar',
+    });
   }
 
   private async presentToast(message: string) {

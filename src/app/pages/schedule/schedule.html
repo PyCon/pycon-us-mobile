@@ -69,7 +69,8 @@
         <a *ngIf="session.track === 'Informational'"
            class="informational-notice"
            [hidden]="session.hide"
-           [routerLink]="session.listRender ? '/app/tabs/tracks/' + session.section : '/app/tabs/schedule/session/' + session.id">
+           [routerLink]="session.listRender ? '/app/tabs/tracks/' + session.section : '/app/tabs/schedule/session/' + session.id"
+           [queryParams]="session.listRender ? null : { prevUrl: '/app/tabs/schedule' }">
           <h3 class="notice-title">
             <ion-icon name="information-circle-outline" class="notice-icon" aria-hidden="true"></ion-icon>
             <span class="notice-name">{{session.name}}</span>
@@ -81,7 +82,8 @@
         </a>
 
         <ion-item-sliding *ngIf="session.track !== 'Informational'" #slidingItem [attr.track]="session.track | lowercase" [hidden]="session.hide">
-          <ion-item [routerLink]="session.listRender? '/app/tabs/tracks/' + session.section: '/app/tabs/schedule/session/'+session.id">
+          <ion-item [routerLink]="session.listRender? '/app/tabs/tracks/' + session.section: '/app/tabs/schedule/session/'+session.id"
+                    [queryParams]="session.listRender ? null : { prevUrl: '/app/tabs/schedule' }">
             <ion-label>
               <h3>
                 <ion-icon *ngIf="session.favorite" slot="icon-only" name="star"></ion-icon>
