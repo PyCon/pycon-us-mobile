@@ -1,11 +1,20 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ToastController } from '@ionic/angular';
+import { Platform, ToastController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { InAppBrowser } from '@capacitor/inappbrowser';
 import { Subscription } from 'rxjs';
 import {
   NotificationsService,
   NotificationCategory,
   NotificationPrefs,
 } from '../../providers/notifications.service';
+
+// App Store / Play Store URLs for the "please update" banner. Tap the
+// link in the banner → opens the store listing in the appropriate
+// system app. Bundle id is `org.pycon.us.2023.onsite`.
+const APP_STORE_URL = 'https://apps.apple.com/us/app/pycon-us/id6450461066';
+const PLAY_STORE_URL =
+  'https://play.google.com/store/apps/details?id=org.pycon.us';
 
 @Component({
   selector: 'app-notification-settings',
@@ -24,16 +33,31 @@ export class NotificationSettingsPage implements OnInit, OnDestroy {
   loaded = false;
   showTitle = false;
   fcmToken: string | null = null;
+  needsAppUpdate = false;
+  storeUrl = APP_STORE_URL;
   private tokenSub?: Subscription;
-
-  onScroll(event: any) {
-    this.showTitle = event.detail.scrollTop > 100;
-  }
 
   constructor(
     private notifications: NotificationsService,
     private toastCtrl: ToastController,
-  ) {}
+    private platform: Platform,
+  ) {
+    // The Notifications page can ride live updates ahead of an App Store
+    // binary that doesn't yet have the new native plugins compiled in
+    // (FirebaseMessaging, FirebaseAnalytics, LocalNotifications). Detect
+    // that mismatch up-front so the page shows a "please update" banner
+    // instead of a row of toggles that look fine but silently no-op.
+    if (this.platform.is('hybrid')) {
+      this.needsAppUpdate =
+        !Capacitor.isPluginAvailable('FirebaseMessaging') ||
+        !Capacitor.isPluginAvailable('LocalNotifications');
+      this.storeUrl = this.platform.is('android') ? PLAY_STORE_URL : APP_STORE_URL;
+    }
+  }
+
+  onScroll(event: any) {
+    this.showTitle = event.detail.scrollTop > 100;
+  }
 
   async ngOnInit() {
     this.prefs = await this.notifications.getPrefs();
@@ -103,6 +127,33 @@ export class NotificationSettingsPage implements OnInit, OnDestroy {
       position: 'bottom',
     });
     toast.present();
+  }
+
+  // Deep-link to the OS Settings page for this app so users who
+  // previously denied notification permission can re-enable it without
+  // hunting through Settings. Only iOS exposes a reliable URL scheme
+  // (app-settings:) for this; Android needs a custom intent and there's
+  // no Capacitor-builtin path, so we hide the button there.
+  get canOpenAppSettings(): boolean {
+    return this.platform.is('hybrid') && this.platform.is('ios');
+  }
+
+  async openAppSettings() {
+    try {
+      // `app-settings:` is iOS's per-app Settings deep-link scheme.
+      // Routing it through openInExternalBrowser lets iOS dispatch it
+      // natively (the WebView wouldn't otherwise hand off custom URL
+      // schemes).
+      await InAppBrowser.openInExternalBrowser({ url: 'app-settings:' });
+    } catch (err) {
+      console.warn('Could not open app settings', err);
+      const toast = await this.toastCtrl.create({
+        message: 'Open Settings → PyCon US to manage notification permission.',
+        duration: 2500,
+        position: 'bottom',
+      });
+      toast.present();
+    }
   }
 
   async copyToken() {

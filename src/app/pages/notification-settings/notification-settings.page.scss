@@ -50,6 +50,50 @@ ion-title {
   }
 }
 
+.notif-update-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -24px 16px 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #FFD779 0%, #F5B935 100%);
+  color: #101136;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(245, 185, 53, 0.35);
+  position: relative;
+  z-index: 2;
+
+  ion-icon { font-size: 1.6rem; flex-shrink: 0; }
+
+  .notif-update-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    span {
+      font-size: 0.78rem;
+      opacity: 0.85;
+      line-height: 1.3;
+    }
+  }
+
+  .notif-update-arrow { font-size: 1rem; opacity: 0.7; }
+
+  &:active { opacity: 0.85; }
+}
+
+.notif-list-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 .notif-list {
   margin: -24px 16px 0;
   border-radius: 16px;
@@ -120,9 +164,15 @@ ion-title {
   }
 }
 
+.notif-open-settings-btn {
+  margin-top: 12px;
+  --border-radius: 8px;
+}
+
 .notif-note {
   margin: 24px 16px 16px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
   justify-content: center;

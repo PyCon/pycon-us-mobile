@@ -99,6 +99,24 @@ ion-menu.ios ion-list {
   padding: 20px 0 0;
 }
 
+// The Account list is a separate <ion-list> after the main content list
+// (multi-section block above). Each ion-list adds 20px top padding plus
+// platform-default ion-list-header margins, which double up here and
+// produce a noticeably bigger gap before the Account header than between
+// sections within the main list. Tighten it so the visual rhythm matches
+// the other section dividers.
+ion-menu.ios ion-list.account-list,
+ion-menu.md ion-list.account-list {
+  padding-top: 0;
+}
+
+ion-menu.ios ion-list.account-list ion-list-header,
+ion-menu.md ion-list.account-list ion-list-header {
+  --padding-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+
 ion-menu.ios ion-item {
   --padding-start: 16px;
   --min-height: 50px;

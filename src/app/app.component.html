@@ -168,7 +168,7 @@
 
         </ion-list>
 
-        <ion-list lines="none">
+        <ion-list lines="none" class="account-list">
           <ion-list-header>
             Account
           </ion-list-header>
@@ -187,17 +187,17 @@
             </ion-item>
           </ion-menu-toggle>
 
-          <ion-menu-toggle *ngIf="loggedIn" autoHide="false">
-            <ion-item button detail="false" (click)="logout()">
-              <ion-icon slot="start" name="log-out-outline" color="danger"></ion-icon>
-              <ion-label color="danger">Logout</ion-label>
-            </ion-item>
-          </ion-menu-toggle>
-
           <ion-menu-toggle autoHide="false">
             <ion-item routerLink="/app/tabs/notifications" routerLinkActive="active" routerDirection="root" detail="false">
               <ion-icon slot="start" name="notifications-outline"></ion-icon>
               <ion-label>Notifications</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <ion-menu-toggle *ngIf="loggedIn" autoHide="false">
+            <ion-item button detail="false" (click)="logout()">
+              <ion-icon slot="start" name="log-out-outline" color="danger"></ion-icon>
+              <ion-label color="danger">Logout</ion-label>
             </ion-item>
           </ion-menu-toggle>
 

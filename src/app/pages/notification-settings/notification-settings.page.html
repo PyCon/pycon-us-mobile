@@ -14,7 +14,16 @@
     <p>Choose which alerts you want from the PyCon US app.</p>
   </div>
 
-  <ion-list lines="full" *ngIf="loaded" class="notif-list">
+  <a *ngIf="needsAppUpdate" [href]="storeUrl" target="_blank" rel="noopener" class="notif-update-banner">
+    <ion-icon name="cloud-download-outline" aria-hidden="true"></ion-icon>
+    <div class="notif-update-text">
+      <strong>Update required</strong>
+      <span>This page needs the latest PyCon US app to work. Tap to open the App Store / Play Store.</span>
+    </div>
+    <ion-icon name="open-outline" class="notif-update-arrow" aria-hidden="true"></ion-icon>
+  </a>
+
+  <ion-list lines="full" *ngIf="loaded" class="notif-list" [class.notif-list-disabled]="needsAppUpdate">
     <ion-item class="notif-master">
       <ion-label class="notif-label">
         <h2>All notifications</h2>
@@ -105,6 +114,15 @@
     <ion-text color="medium">
       <p>If you previously denied notification permission for this app, enable it from your device settings to receive alerts.</p>
     </ion-text>
+    <ion-button
+      *ngIf="canOpenAppSettings"
+      fill="outline"
+      size="small"
+      (click)="openAppSettings()"
+      class="notif-open-settings-btn">
+      <ion-icon slot="start" name="settings-outline"></ion-icon>
+      Open PyCon US Settings
+    </ion-button>
   </div>
 
   <ion-list lines="none" *ngIf="fcmToken" class="notif-token-card">
