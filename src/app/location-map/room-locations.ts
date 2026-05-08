@@ -86,6 +86,7 @@ const ROOM_LOCATIONS_RAW: Record<string, RoomLocation> = {
   // tilted parallelogram in the upper right.
   '101a': concourse('Room 101A', 14, 50, 'Tutorials / PSF Members Lunch / PyLadies Lunch'),
   '101b': concourse('Room 101B', 19, 50, 'Tutorials / PSF Members Lunch / PyLadies Lunch'),
+  '101ab': concourse('Room 101AB', 17, 50, 'Tutorials / PSF Members Lunch / PyLadies Lunch'),
   '102a': concourse('Room 102A', 23, 50, 'Tutorials / Open Spaces'),
   '102b': concourse('Room 102B', 27, 50, 'Tutorials / Open Spaces'),
   '102c': concourse('Room 102C', 31, 50, 'Tutorials / Open Spaces'),
