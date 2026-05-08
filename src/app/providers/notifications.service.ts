@@ -16,7 +16,8 @@ export type NotificationCategory =
   | 'openSpace'
   | 'emergency'
   | 'announcements'
-  | 'scheduleChanges';
+  | 'scheduleChanges'
+  | 'dailyDigest';
 
 export interface NotificationPrefs {
   lightning: boolean;
@@ -24,6 +25,7 @@ export interface NotificationPrefs {
   emergency: boolean;
   announcements: boolean;
   scheduleChanges: boolean;
+  dailyDigest: boolean;
 }
 
 interface ScheduledReminder {
@@ -44,6 +46,7 @@ const DEFAULT_PREFS: NotificationPrefs = {
   emergency: true,
   announcements: true,
   scheduleChanges: true,
+  dailyDigest: true,
 };
 
 // Map of toggle category → FCM topic name. Only push-driven categories
@@ -55,6 +58,7 @@ const TOPIC_BY_CATEGORY: Partial<Record<NotificationCategory, string>> = {
   emergency: 'emergency',
   announcements: 'announcements',
   scheduleChanges: 'schedule-changes',
+  dailyDigest: 'daily-digest',
 };
 
 // All times PDT (America/Los_Angeles, UTC-7). Reminders fire 15 minutes
@@ -304,7 +308,8 @@ export class NotificationsService {
     return (
       this.prefs.emergency ||
       this.prefs.announcements ||
-      this.prefs.scheduleChanges
+      this.prefs.scheduleChanges ||
+      this.prefs.dailyDigest
     );
   }
 

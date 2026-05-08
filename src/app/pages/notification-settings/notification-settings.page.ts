@@ -19,6 +19,7 @@ export class NotificationSettingsPage implements OnInit, OnDestroy {
     emergency: true,
     announcements: true,
     scheduleChanges: true,
+    dailyDigest: true,
   };
   loaded = false;
   showTitle = false;
@@ -66,6 +67,7 @@ export class NotificationSettingsPage implements OnInit, OnDestroy {
       this.prefs.openSpace &&
       this.prefs.announcements &&
       this.prefs.scheduleChanges &&
+      this.prefs.dailyDigest &&
       this.prefs.emergency
     );
   }
@@ -79,6 +81,7 @@ export class NotificationSettingsPage implements OnInit, OnDestroy {
       !this.prefs.openSpace &&
       !this.prefs.announcements &&
       !this.prefs.scheduleChanges &&
+      !this.prefs.dailyDigest &&
       !this.prefs.emergency
     );
   }
@@ -90,6 +93,7 @@ export class NotificationSettingsPage implements OnInit, OnDestroy {
       openSpace: value,
       announcements: value,
       scheduleChanges: value,
+      dailyDigest: value,
       emergency: value,
     };
     await this.notifications.setAllPrefs(value);

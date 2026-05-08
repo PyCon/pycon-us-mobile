@@ -11,7 +11,7 @@
   <div class="notif-hero">
     <ion-icon name="notifications-outline" class="notif-hero-icon"></ion-icon>
     <h1>Notifications</h1>
-    <p>Choose which alerts you want from the PyCon app.</p>
+    <p>Choose which alerts you want from the PyCon US app.</p>
   </div>
 
   <ion-list lines="full" *ngIf="loaded" class="notif-list">
@@ -77,8 +77,20 @@
 
     <ion-item>
       <ion-label class="notif-label">
+        <h2>Daily digest</h2>
+        <p>One push per day with the day's highlights, linking to the recap on us.pycon.org.</p>
+      </ion-label>
+      <ion-toggle
+        slot="end"
+        [checked]="prefs.dailyDigest"
+        (ionChange)="onToggle('dailyDigest', $event.detail.checked)">
+      </ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label class="notif-label">
         <h2>Emergency &amp; safety alerts</h2>
-        <p>Push when staff send a safety, ICE, or emergency notice.</p>
+        <p>Push when staff send a safety or emergency notice.</p>
       </ion-label>
       <ion-toggle
         slot="end"
