@@ -7,6 +7,7 @@ import {
   PermissionStatus,
 } from '@capacitor/local-notifications';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import { FirebaseAnalytics } from '@capacitor-firebase/analytics';
 import { BehaviorSubject } from 'rxjs';
 
 
@@ -172,6 +173,8 @@ export class NotificationsService {
       await this.syncTopic(topic, value);
     }
     await this.applyPrefs();
+    this.logToggle(key, value);
+    this.setUserProperty(key, value);
   }
 
   // Bulk setter for the "Mute all" / "Enable all" master control. Flips
@@ -186,6 +189,45 @@ export class NotificationsService {
     this.prefs = next;
     await this.storage.set(PREF_KEY, this.prefs);
     await this.applyPrefs();
+    this.logEvent('toggle_all_notifications', { enabled: value });
+    (Object.keys(this.prefs) as NotificationCategory[]).forEach((k) => {
+      this.setUserProperty(k, value);
+    });
+  }
+
+  // Push the current pref state into Firebase user properties so audience
+  // segmentation in the Firebase / GA console reports today's snapshot,
+  // not just deltas. Called from setPref/setAllPrefs (above) and once on
+  // startup (in applyPrefs) so pre-existing installs report state too.
+  private snapshotPrefsToAnalytics(): void {
+    (Object.keys(this.prefs) as NotificationCategory[]).forEach((k) => {
+      this.setUserProperty(k, this.prefs[k]);
+    });
+  }
+
+  private logToggle(key: NotificationCategory, value: boolean): void {
+    this.logEvent('toggle_notification', {
+      // Stick with snake_case keys — Firebase Analytics' default schema.
+      category: key,
+      enabled: value,
+    });
+  }
+
+  private logEvent(name: string, params: Record<string, any>): void {
+    if (!this.platform.is('hybrid')) return;
+    FirebaseAnalytics.logEvent({ name, params }).catch((err) => {
+      console.warn(`FirebaseAnalytics.logEvent(${name}) failed`, err);
+    });
+  }
+
+  private setUserProperty(key: NotificationCategory, value: boolean): void {
+    if (!this.platform.is('hybrid')) return;
+    // User-property keys must be ≤24 chars and start with a letter; the
+    // `notif_` prefix keeps them grouped in Firebase Analytics' UI.
+    FirebaseAnalytics.setUserProperty({
+      key: `notif_${key}`.slice(0, 24),
+      value: value ? 'on' : 'off',
+    }).catch(() => undefined);
   }
 
   // Subscribe/unsubscribe the device from an FCM topic so the toggle
@@ -210,6 +252,11 @@ export class NotificationsService {
   // receive time in handleEmergencyPush().
   async applyPrefs(): Promise<void> {
     if (!this.platform.is('hybrid')) return;
+    // Snapshot current prefs into Firebase Analytics user properties on
+    // every cold-start apply — Audiences / segments in the Firebase
+    // console will reflect today's state for every active install, not
+    // just users who flip a toggle.
+    this.snapshotPrefsToAnalytics();
     // Re-assert FCM topic subscriptions on every apply — covers cases
     // where the device's topic state drifts from prefs (fresh install,
     // token rotation, app reinstall) by always pushing local state up to

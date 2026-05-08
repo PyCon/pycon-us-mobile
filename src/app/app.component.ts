@@ -4,6 +4,7 @@ import { MenuController, Platform, ToastController } from '@ionic/angular';
 
 import { SplashScreen } from '@capacitor/splash-screen';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import { FirebaseAnalytics } from '@capacitor-firebase/analytics';
 
 import { Storage } from '@ionic/storage-angular';
 
@@ -128,7 +129,18 @@ export class AppComponent implements OnInit {
       // so users who turn a category off don't receive the push at all.
       // This check is a defense in case staff send to all devices
       // instead of a topic.
-      if (!this.notifications.shouldShowPushBanner()) return;
+      const showed = this.notifications.shouldShowPushBanner();
+      // Log every received push so we can compare delivery counts to
+      // opt-in rates in Firebase Analytics. The `topic` data field is
+      // attached server-side when staff fire a campaign via topic.
+      FirebaseAnalytics.logEvent({
+        name: 'notification_received',
+        params: {
+          topic: event?.notification?.data?.['topic'] ?? 'unknown',
+          banner_shown: showed,
+        },
+      }).catch(() => undefined);
+      if (!showed) return;
       const notification = event?.notification;
       const title = notification?.title ?? 'PyCon US';
       const body = notification?.body ?? '';
