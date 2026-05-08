@@ -1,54 +1,74 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button color="medium"></ion-menu-button>
+    </ion-buttons>
     <ion-title>CoC Incident</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [style.visibility]="content_visibility">
-  <ion-list>
-    <ion-item *ngIf="show_permissions_error">
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>Uh oh..</ion-card-title>
-          <ion-card-subtitle>Camera Permissions Not Granted</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-text>Looks like you did not grant this application permission to access your camera.</ion-text>
-          <ion-text>
-            You can resolve this by opening<br><br>
-            <code *ngIf="ios">Settings > Privacy & Security > Camera > PyCon US 2026<br><br></code>
-            <code *ngIf="!ios">Settings > Apps > PyCon US 2026 > Permissions > Camera<br><br></code>
-            And enabling camera permssions for this app.
-          </ion-text>
-        </ion-card-content>
-      </ion-card>
-    </ion-item>
+<ion-content [style.visibility]="scanning ? 'hidden' : ''">
 
-  </ion-list>
+  <ion-card *ngIf="show_permissions_error" color="warning" class="permission-card">
+    <ion-card-header>
+      <ion-card-title>Camera permission required</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Looks like you didn't grant the app permission to access your camera.</p>
+      <p>Re-enable it under:</p>
+      <p *ngIf="ios"><code>Settings &rsaquo; Privacy &amp; Security &rsaquo; Camera &rsaquo; PyCon US 2026</code></p>
+      <p *ngIf="!ios"><code>Settings &rsaquo; Apps &rsaquo; PyCon US 2026 &rsaquo; Permissions &rsaquo; Camera</code></p>
+    </ion-card-content>
+  </ion-card>
+
+  <section class="intro-section" *ngIf="!violationData">
+    <h2 class="section-title">Capture an Incident</h2>
+    <p class="section-hint">
+      Tap <strong>Start Scanner</strong>, point the camera at the
+      attendee's badge QR code, and the app will record a CoC incident
+      against their record. Their full name, badge name, email, and
+      running incident count appear here after each scan.
+    </p>
+  </section>
+
 </ion-content>
 
 <ion-footer>
-  <ion-card *ngIf="violationData" [color]="violationData?.data?.violations > 2 ? 'danger': violationData?.data?.violations > 1 ? 'warning': ''">
-    <ion-card-header>
-      <ion-card-title>{{violationData?.data?.nickname}}</ion-card-title>
-    </ion-card-header>
+  <ion-card *ngIf="violationData"
+            class="last-scan-card"
+            [color]="violationData?.data?.violations > 2 ? 'danger' : violationData?.data?.violations > 1 ? 'warning' : 'success'">
     <ion-card-content>
-      <ion-grid>
-        <ion-row><ion-col>Full Name</ion-col><ion-col>{{violationData?.data?.full_name}}</ion-col></ion-row>
-        <ion-row><ion-col>Badge Name</ion-col><ion-col>{{violationData?.data?.badge_name}}</ion-col></ion-row>
-        <ion-row><ion-col>Email</ion-col><ion-col>{{violationData?.data?.email}}</ion-col></ion-row>
-        <ion-row><ion-col>Violation Count</ion-col><ion-col>{{violationData?.data?.violations}}</ion-col></ion-row>
-      </ion-grid>
+      <div class="last-scan-row">
+        <ion-icon
+          [name]="violationData?.data?.violations > 1 ? 'alert-circle-outline' : 'checkmark-circle-outline'"
+          aria-hidden="true">
+        </ion-icon>
+        <div class="last-scan-text">
+          <strong>{{ violationData?.data?.nickname || violationData?.data?.full_name }}</strong>
+          <span class="badge-name" *ngIf="violationData?.data?.badge_name">
+            Badge: {{ violationData?.data?.badge_name }}
+          </span>
+          <span class="email" *ngIf="violationData?.data?.email">
+            {{ violationData?.data?.email }}
+          </span>
+          <span class="violation-count">
+            <strong>{{ violationData?.data?.violations }}</strong>
+            incident<span *ngIf="violationData?.data?.violations !== 1">s</span> on record
+          </span>
+        </div>
+      </div>
     </ion-card-content>
   </ion-card>
+
   <ion-toolbar class="footer-toolbar">
-    <ion-buttons class="footer-buttons">
-      <ion-button fill="solid" color="success" class="footer-button" (click)="startScan()" [style.visibility]="scan_start_button_visibility">
-        Start Scanner
-      </ion-button>
-      <ion-button fill="solid" color="danger" class="footer-button" (click)="stopScan()" [style.visibility]="scan_stop_button_visibility">
-        Stop Scanner
-      </ion-button>
-    </ion-buttons>
+    <ion-button
+      expand="block"
+      size="large"
+      class="scan-toggle-button"
+      [color]="scanning ? 'danger' : 'success'"
+      (click)="scanning ? stopScan() : startScan()">
+      <ion-icon slot="start" [name]="scanning ? 'stop-circle-outline' : 'qr-code-outline'"></ion-icon>
+      {{ scanning ? 'Stop Scanner' : 'Start Scanner' }}
+    </ion-button>
   </ion-toolbar>
 </ion-footer>

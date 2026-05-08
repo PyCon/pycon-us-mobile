@@ -11,9 +11,11 @@ import { PyConAPI } from '../../providers/pycon-api';
   styleUrls: ['./mask-violation.page.scss'],
 })
 export class MaskViolationPage implements OnInit, OnDestroy {
-  content_visibility = 'show';
-  scan_start_button_visibility = 'show';
-  scan_stop_button_visibility = 'hidden';
+  // Single source of truth for scanner state. The template binds
+  // visibility, button label, and color directly off this — replaces
+  // the trio of *_visibility = 'show'|'hidden' string flags from the
+  // older page that didn't survive lifecycle transitions cleanly.
+  scanning = false;
   scan_presentation = [];
   dirty: boolean = false;
 
@@ -75,18 +77,16 @@ export class MaskViolationPage implements OnInit, OnDestroy {
       return;
     }
     this.show_permissions_error = false;
-    this.content_visibility = 'hidden';
-    this.scan_start_button_visibility = 'hidden';
-    this.scan_stop_button_visibility = '';
-    const listener = await BarcodeScanner.addListener(
+    this.scanning = true;
+    await BarcodeScanner.addListener(
       'barcodesScanned',
       async result => {
-        this.handleScan(result)
+        this.handleScan(result);
       },
     );
     BarcodeScanner.startScan({
       formats: [BarcodeFormat.QrCode],
-      lensFacing: LensFacing.Back
+      lensFacing: LensFacing.Back,
     });
   };
 
@@ -94,10 +94,8 @@ export class MaskViolationPage implements OnInit, OnDestroy {
     this.violationData = null;
     clearTimeout(this.scan_timeout);
     await BarcodeScanner.removeAllListeners();
-    await BarcodeScanner.stopScan()
-    this.scan_stop_button_visibility = 'hidden';
-    this.scan_start_button_visibility = '';
-    this.content_visibility = '';
+    await BarcodeScanner.stopScan();
+    this.scanning = false;
   }
 
   ionViewWillLeave() {

@@ -1,26 +1,89 @@
-.footer-buttons {
+.permission-card {
+  margin: 16px;
+}
+
+.intro-section {
+  padding: 24px 20px 12px;
+}
+
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ion-color-medium, #666);
+  margin: 0 0 10px;
+}
+
+.section-hint {
+  color: var(--ion-color-medium, #888);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.last-scan-card {
+  margin: 16px 16px 0;
+  border-radius: 14px;
+
+  ion-card-content {
+    padding: 14px 16px;
+  }
+}
+
+.last-scan-row {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
+
+  ion-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+.last-scan-text {
+  display: flex;
   flex-direction: column;
-  height: 100%;
+  gap: 2px;
+  min-width: 0;
+
+  strong {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  .badge-name,
+  .email {
+    font-size: 0.85rem;
+    opacity: 0.85;
+  }
+
+  .violation-count {
+    margin-top: 4px;
+    font-size: 0.95rem;
+
+    strong {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+  }
 }
 
-.footer-button {
-  position: absolute;
-}
 .footer-toolbar {
-  padding-top: 1em;
-  padding-bottom: 1em;
+  padding: 8px 12px 12px;
+  --background: var(--ion-background-color);
 }
 
-.header-info {
-  font-size: .6em;
-  padding-bottom: .5em;
+.scan-toggle-button {
+  --border-radius: 14px;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
-::ng-deep .mycomponent-wider-popover
-{
+::ng-deep .mycomponent-wider-popover {
   --width: 95%;
   --max-width: 400px;
 }

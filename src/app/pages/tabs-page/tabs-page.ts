@@ -15,6 +15,7 @@ export class TabsPage implements OnInit {
   currentBannerSponsor: any;
   hasLeadRetrieval: boolean = false;
   hasDoorCheck: boolean = false;
+  hasMaskViolation: boolean = false;
   loggedIn: boolean = false;
   showStaffTools: boolean = false;
   activeTab: string = '';
@@ -30,6 +31,7 @@ export class TabsPage implements OnInit {
     this.reloadSponsors();
     this.checkHasLeadRetrieval();
     this.checkHasDoorCheck();
+    this.checkHasMaskViolation();
     this.checkLoggedIn();
     this.listenForLoginEvents();
     setInterval(this.showSponsorBanner, 30000);
@@ -114,6 +116,18 @@ export class TabsPage implements OnInit {
   updateHasDoorCheck(hasDoorCheck: boolean) {
     setTimeout(() => {
       this.hasDoorCheck = hasDoorCheck;
+    }, 200)
+  }
+
+  checkHasMaskViolation() {
+    return this.userData.checkHasMaskViolation().then(hasMaskViolation => {
+      return this.updateHasMaskViolation(hasMaskViolation);
+    });
+  }
+
+  updateHasMaskViolation(hasMaskViolation: boolean) {
+    setTimeout(() => {
+      this.hasMaskViolation = hasMaskViolation;
     }, 200)
   }
 
