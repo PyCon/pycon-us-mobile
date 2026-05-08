@@ -312,13 +312,22 @@ export class ConferenceData {
       // row spanning lunches and afternoon talks. Per-room same-start
       // breaks/lunches still merge correctly because they share start.
       //
+      // EXCEPTION: lunch is staggered across rooms (e.g. talks ending at
+      // 12:30 in some rooms and 12:45 in others) and the API ships each
+      // staggered start as a separate "Lunch (Hall AB)" break slot. Users
+      // expect ONE Lunch row per day spanning the earliest to latest
+      // window, not 12:30/12:45/1:00/1:15 duplicates. Drop start from
+      // the key for lunch-named slots so they all collapse together; the
+      // merge code below already takes earliest-start + latest-end.
+      //
       // POSTERS are different — every individual poster slot in the API
       // is a 5-minute kind="poster" entry with name="Posters", and we
       // intentionally fold the entire daily poster session into ONE row.
       // Adding start to the key here would split them back into 50+
       // 5-minute rows, which is the regression PR #289 introduced.
-      // So: only add start for breaks.
-      const startKey = slot.kind === 'break' ? `-${slot.start}` : '';
+      // So: only add start for breaks that aren't lunch.
+      const isLunch = /^lunch\b/i.test(slotName);
+      const startKey = slot.kind === 'break' && !isLunch ? `-${slot.start}` : '';
       const key = `${slot.kind}-${day}-${slotName}${startKey}`;
       if (!collapsedGroups.has(key)) {
         // Rename lunchtime breaks
