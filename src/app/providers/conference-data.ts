@@ -8,6 +8,7 @@ import markdownToTxt from 'markdown-to-txt';
 
 import { UserData } from './user-data';
 import { environment } from '../../environments/environment';
+import { ROOM_LOCATIONS } from '../location-map/room-locations';
 
 @Injectable({
   providedIn: 'root'
@@ -757,6 +758,19 @@ export class ConferenceData {
       session.displayLocation = session.displayLocationOverride
         || (links.length > 0 ? links[0].name : (session.location || ''));
     });
+    // Seed empty entries for sprint-only rooms. Sprints aren't in
+    // data.sessions (the API ships them as a separate `sprints` array, not
+    // as schedule slots), so without this the Seaside S-rooms / ballrooms
+    // never appear in the Rooms list — even though they're real venues
+    // attendees need to find. PYMOBIL-120.
+    Object.values(ROOM_LOCATIONS).forEach((loc: any) => {
+      if (!loc?.sublabel || !/sprints/i.test(loc.sublabel)) return;
+      const slug = this.slugifyRoom(loc.label);
+      if (!roomMap.has(slug)) {
+        roomMap.set(slug, { name: loc.label, slug, sessions: [] });
+      }
+    });
+
     roomMap.forEach((room: any) => {
       room.sessions.sort(
         (a: any, b: any) =>
