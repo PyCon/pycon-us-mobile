@@ -67,35 +67,30 @@ const TOPIC_BY_CATEGORY: Partial<Record<NotificationCategory, string>> = {
 // each time `applyPrefs()` runs.
 //
 // PyCon US 2026 calendar: Thu = May 14, Fri = May 15, Sat = May 16, Sun = May 17.
+//
+// Lightning talks: submissions are continuous via the PyCon US dashboard
+// (gated by waffle flag `lightning_talk_signups_open` in pycon-site).
+// Organizers select at lunchtime each day for that evening + the next
+// morning's slots — so the meaningful submission cycles are Fri & Sat
+// mornings. Talk slots are Fri 6 PM, Sat 8 AM, Sat 5:45 PM, Sun 8 AM.
+//
 // Open-space windows confirmed against pycon-site/load-open-spaces.py:
 //   Fri slots → signup opens Thu May 14, 5:00 PM
 //   Sat slots → signup opens Sat May 16, 8:00 AM
 //   Sun slots → signup opens Sun May 17, 8:00 AM
 const REMINDERS: Array<Omit<ScheduledReminder, 'id'>> = [
-  // Lightning talks
+  // Lightning talks — two daily selection cycles (Fri & Sat lunch).
   {
     category: 'lightning',
-    title: 'Lightning Talk sign-ups open soon',
-    body: 'Friday morning slot — signup opens at 9:00 AM, deadline 1:00 PM.',
-    fireAt: new Date('2026-05-15T08:45:00-07:00'),
+    title: 'Lightning Talk sign-ups are open',
+    body: 'Submit on the PyCon US dashboard. Speakers picked at lunch for tonight (6 PM) and Saturday morning (8 AM).',
+    fireAt: new Date('2026-05-15T09:00:00-07:00'),
   },
   {
     category: 'lightning',
-    title: 'Lightning Talk sign-ups open soon',
-    body: 'Friday evening slot — signup opens at 5:00 AM, deadline 9:00 AM.',
-    fireAt: new Date('2026-05-15T04:45:00-07:00'),
-  },
-  {
-    category: 'lightning',
-    title: 'Lightning Talk sign-ups open soon',
-    body: 'Saturday morning slot — signup opens at 9:00 AM, deadline 1:00 PM.',
-    fireAt: new Date('2026-05-16T08:45:00-07:00'),
-  },
-  {
-    category: 'lightning',
-    title: 'Lightning Talk sign-ups open soon',
-    body: 'Saturday afternoon slot — signup opens at 5:00 AM, deadline 9:00 AM.',
-    fireAt: new Date('2026-05-16T04:45:00-07:00'),
+    title: 'Last call: Lightning Talk sign-ups',
+    body: 'Submit on the PyCon US dashboard. Speakers picked at lunch for tonight (5:45 PM) and Sunday morning (8 AM).',
+    fireAt: new Date('2026-05-16T09:00:00-07:00'),
   },
   // Open spaces
   {
