@@ -62,5 +62,9 @@
 	{
 		"pkg": "@ebarooni/capacitor-calendar",
 		"classpath": "dev.barooni.capacitor.calendar.CapacitorCalendarPlugin"
+	},
+	{
+		"pkg": "capacitor-native-settings",
+		"classpath": "nl.raphael.settings.NativeSettingsPlugin"
 	}
 ]

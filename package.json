@@ -51,6 +51,7 @@
     "@ionic/storage-angular": "^4.0.0",
     "@json-editor/json-editor": "2.14.1",
     "@types/crypto-js": "^4.2.2",
+    "capacitor-native-settings": "^7.0.2",
     "core-js": "^3.6.4",
     "crypto-js": "^4.2.0",
     "firebase": "^11.10.0",

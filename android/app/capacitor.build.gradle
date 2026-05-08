@@ -25,6 +25,7 @@ dependencies {
     implementation project(':capacitor-splash-screen')
     implementation project(':capacitor-status-bar')
     implementation project(':ebarooni-capacitor-calendar')
+    implementation project(':capacitor-native-settings')
 
 }
 

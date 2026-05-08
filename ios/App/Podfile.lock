@@ -34,6 +34,8 @@ PODS:
   - CapacitorMlkitBarcodeScanning (7.5.0):
     - Capacitor
     - GoogleMLKit/BarcodeScanning (= 7.0.0)
+  - CapacitorNativeSettings (7.0.2):
+    - Capacitor
   - CapacitorNetwork (7.0.3):
     - Capacitor
   - CapacitorShare (7.0.3):
@@ -185,6 +187,7 @@ DEPENDENCIES:
   - "CapacitorLiveUpdates (from `../../node_modules/@capacitor/live-updates`)"
   - "CapacitorLocalNotifications (from `../../node_modules/@capacitor/local-notifications`)"
   - "CapacitorMlkitBarcodeScanning (from `../../node_modules/@capacitor-mlkit/barcode-scanning`)"
+  - CapacitorNativeSettings (from `../../node_modules/capacitor-native-settings`)
   - "CapacitorNetwork (from `../../node_modules/@capacitor/network`)"
   - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
@@ -242,6 +245,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/local-notifications"
   CapacitorMlkitBarcodeScanning:
     :path: "../../node_modules/@capacitor-mlkit/barcode-scanning"
+  CapacitorNativeSettings:
+    :path: "../../node_modules/capacitor-native-settings"
   CapacitorNetwork:
     :path: "../../node_modules/@capacitor/network"
   CapacitorShare:
@@ -267,6 +272,7 @@ SPEC CHECKSUMS:
   CapacitorLiveUpdates: 4a2ebeb2788f787d3133877ee159a3e900443b14
   CapacitorLocalNotifications: 2e3f5b717ec9cd2bd64d93c99a9470941e1c80be
   CapacitorMlkitBarcodeScanning: afd6fc431b550026a2c052e11ab2b71c7ae30011
+  CapacitorNativeSettings: 3cd2e2ef431fe471674f381609cfb29154ddfcfa
   CapacitorNetwork: 1a22460c6f900686f12ffa52f3074ee313821b08
   CapacitorShare: a4f4f86eabd4b3ff52ba6a11b754713c6926a8d1
   CapacitorSplashScreen: 000f7591d546907dda5cbb514bd6b6d9e6048cf8
@@ -294,6 +300,6 @@ SPEC CHECKSUMS:
   OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
 
-PODFILE CHECKSUM: 1e6ed4c26a21afe21f1e26bfd2be49ebb399f98b
+PODFILE CHECKSUM: 4adcc832840a94b8faadfb6a204062c12e04c6e5
 
 COCOAPODS: 1.16.2

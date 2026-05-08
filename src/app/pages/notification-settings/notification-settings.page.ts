@@ -1,7 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Platform, ToastController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
-import { InAppBrowser } from '@capacitor/inappbrowser';
+import {
+  NativeSettings,
+  IOSSettings,
+  AndroidSettings,
+} from 'capacitor-native-settings';
 import { Subscription } from 'rxjs';
 import {
   NotificationsService,
@@ -131,20 +135,26 @@ export class NotificationSettingsPage implements OnInit, OnDestroy {
 
   // Deep-link to the OS Settings page for this app so users who
   // previously denied notification permission can re-enable it without
-  // hunting through Settings. Only iOS exposes a reliable URL scheme
-  // (app-settings:) for this; Android needs a custom intent and there's
-  // no Capacitor-builtin path, so we hide the button there.
+  // hunting through Settings. capacitor-native-settings invokes the
+  // native UIApplication.openSettingsURLString on iOS and the
+  // ACTION_APP_NOTIFICATION_SETTINGS intent on Android, both of which
+  // land directly on the app's pane. Plain window.location='app-settings:'
+  // from the WKWebView only opens Settings.app at root because the
+  // calling-app context is lost when the URL goes through the WebView
+  // navigation delegate instead of UIApplication.shared.open().
   get canOpenAppSettings(): boolean {
-    return this.platform.is('hybrid') && this.platform.is('ios');
+    return this.platform.is('hybrid');
   }
 
   async openAppSettings() {
     try {
-      // `app-settings:` is iOS's per-app Settings deep-link scheme.
-      // Routing it through openInExternalBrowser lets iOS dispatch it
-      // natively (the WebView wouldn't otherwise hand off custom URL
-      // schemes).
-      await InAppBrowser.openInExternalBrowser({ url: 'app-settings:' });
+      if (this.platform.is('ios')) {
+        await NativeSettings.openIOS({ option: IOSSettings.App });
+      } else if (this.platform.is('android')) {
+        await NativeSettings.openAndroid({
+          option: AndroidSettings.AppNotification,
+        });
+      }
     } catch (err) {
       console.warn('Could not open app settings', err);
       const toast = await this.toastCtrl.create({
