@@ -1,0 +1,13 @@
+diff --git a/node_modules/@capacitor-firebase/analytics/CapacitorFirebaseAnalytics.podspec b/node_modules/@capacitor-firebase/analytics/CapacitorFirebaseAnalytics.podspec
+index 5e36acf..eaac065 100644
+--- a/node_modules/@capacitor-firebase/analytics/CapacitorFirebaseAnalytics.podspec
++++ b/node_modules/@capacitor-firebase/analytics/CapacitorFirebaseAnalytics.podspec
+@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
+   s.dependency 'Capacitor'
+   s.swift_version = '5.1'
+   s.static_framework = true
+-  s.default_subspec = 'Lite'
++  s.default_subspec = 'Analytics'
+ 
+   s.subspec 'Lite' do |lite|
+     # Default subspec that does not contain optional third party dependencies.

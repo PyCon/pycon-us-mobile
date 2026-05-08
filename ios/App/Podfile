@@ -11,10 +11,7 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
-  # CapacitorFirebaseAnalytics ships subspecs; the default `Lite` subspec
-  # has no Firebase deps. Use `/Analytics` so FirebaseAnalytics (and its
-  # transitive FirebaseCore) actually get installed.
-  pod 'CapacitorFirebaseAnalytics/Analytics', :path => '../../node_modules/@capacitor-firebase/analytics'
+  pod 'CapacitorFirebaseAnalytics', :path => '../../node_modules/@capacitor-firebase/analytics'
   pod 'CapacitorFirebaseMessaging', :path => '../../node_modules/@capacitor-firebase/messaging'
   pod 'CapacitorMlkitBarcodeScanning', :path => '../../node_modules/@capacitor-mlkit/barcode-scanning'
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
@@ -38,6 +35,12 @@ target 'PyCon US' do
   # (the @capacitor-firebase/messaging plugin) — no explicit pod needed.
   # The plugin pins to ~> 11.7.0 on its v7 line; pinning our own version
   # here causes "could not find compatible versions" in pod install.
+  #
+  # CapacitorFirebaseAnalytics's default subspec is patched from `Lite`
+  # to `Analytics` via patch-package (see patches/) so FirebaseAnalytics
+  # gets pulled in transitively. Patching the podspec rather than the
+  # Podfile because cap sync rewrites this file on every run and would
+  # strip a `/Analytics` subspec override.
 end
 
 post_install do |installer|

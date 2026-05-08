@@ -9,6 +9,9 @@ PODS:
   - CapacitorFilesystem (7.1.6):
     - Capacitor
     - IONFilesystemLib (~> 1.0.1)
+  - CapacitorFirebaseAnalytics (7.5.0):
+    - Capacitor
+    - CapacitorFirebaseAnalytics/Analytics (= 7.5.0)
   - CapacitorFirebaseAnalytics/Analytics (7.5.0):
     - Capacitor
     - FirebaseAnalytics (~> 11.7.0)
@@ -174,7 +177,7 @@ DEPENDENCIES:
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorDevice (from `../../node_modules/@capacitor/device`)"
   - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
-  - "CapacitorFirebaseAnalytics/Analytics (from `../../node_modules/@capacitor-firebase/analytics`)"
+  - "CapacitorFirebaseAnalytics (from `../../node_modules/@capacitor-firebase/analytics`)"
   - "CapacitorFirebaseMessaging (from `../../node_modules/@capacitor-firebase/messaging`)"
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
   - "CapacitorInappbrowser (from `../../node_modules/@capacitor/inappbrowser`)"
@@ -256,7 +259,7 @@ SPEC CHECKSUMS:
   CapacitorCordova: bf648a636f3c153f652d312ae145fb508b6ffced
   CapacitorDevice: b64654eb4d404373e733c01d835055ba59286e5c
   CapacitorFilesystem: 66f05ee0d8b1ccdc00d509091273a9b3b57c4a0b
-  CapacitorFirebaseAnalytics: 27ad621b8f41c2cd2b2169f2db6f476cdac49011
+  CapacitorFirebaseAnalytics: 58129772c703183a292d3c47cbbf437e60e182a2
   CapacitorFirebaseMessaging: 1ac12c0dab16d1e4edcf9cb878620507ac868a4e
   CapacitorHaptics: ce15be8f287fa2c61c7d2d9e958885b90cf0bebc
   CapacitorInappbrowser: e1dc727db99127c2908b69408f7da8118d854a84
@@ -291,6 +294,6 @@ SPEC CHECKSUMS:
   OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
 
-PODFILE CHECKSUM: cc8ba5d2a89641697fefc187fe8fa78d4a78937a
+PODFILE CHECKSUM: 1e6ed4c26a21afe21f1e26bfd2be49ebb399f98b
 
 COCOAPODS: 1.16.2
