@@ -96,5 +96,31 @@
     </ion-card-content>
   </ion-card>
 
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Notification tests</ion-card-title>
+      <ion-card-subtitle>
+        Each button schedules a sample notification 5 seconds out — but only
+        if the matching toggle on the Notifications settings page is ON. Flip
+        a toggle off and re-tap to confirm gating works.
+      </ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item
+          button="true"
+          detail="false"
+          *ngFor="let row of notifTests"
+          (click)="testNotif(row.key, row.label)">
+          <ion-icon slot="start" name="notifications-outline" color="primary"></ion-icon>
+          <ion-label>
+            <h2>{{ row.label }}</h2>
+            <p>Test in 5s</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
   <div style="height: 80px"></div>
 </ion-content>

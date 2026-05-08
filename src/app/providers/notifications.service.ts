@@ -113,6 +113,39 @@ const REMINDERS: Array<Omit<ScheduledReminder, 'id'>> = [
   },
 ];
 
+// Sample copy used by the Dev Tools "Test in 5s" buttons — one per
+// category so each toggle's gating can be verified end-to-end on a
+// real device (toggle off → hit Test → expect "muted" toast).
+const TEST_NOTIFICATION_COPY: Record<
+  NotificationCategory,
+  { title: string; body: string }
+> = {
+  lightning: {
+    title: '[TEST] Lightning Talk sign-ups are open',
+    body: 'Submit on the dashboard. Speakers picked at lunch.',
+  },
+  openSpace: {
+    title: '[TEST] Open Space sign-ups open soon',
+    body: 'Saturday slots open at 8:00 AM PDT.',
+  },
+  announcements: {
+    title: '[TEST] Keynote starting now',
+    body: 'Head to the Plenary Hall — keynote begins in 5 minutes.',
+  },
+  scheduleChanges: {
+    title: '[TEST] Schedule change',
+    body: 'A favorited session has moved rooms — tap for details.',
+  },
+  dailyDigest: {
+    title: '[TEST] Today at PyCon US',
+    body: "Today's highlights and recap — tap to read on us.pycon.org.",
+  },
+  emergency: {
+    title: '[TEST] Safety notice',
+    body: 'This is a drill — staff would send real-time guidance here.',
+  },
+};
+
 // Stable IDs in the 8000–8099 range. Local-notification IDs must be 32-bit
 // signed ints; using a deterministic offset means rescheduling cancels the
 // prior copy instead of stacking duplicates.
@@ -243,6 +276,42 @@ export class NotificationsService {
     } catch (err) {
       console.warn(`NotificationsService: topic sync failed for ${topic}`, err);
     }
+  }
+
+  // Schedule a one-shot local notification mimicking a given category, 5
+  // seconds out. Used by Dev Tools to verify both permission/delivery and
+  // toggle-gating on a real device without waiting for a real reminder
+  // window or staff-sent push. Returns the outcome so the caller can
+  // surface the right toast:
+  //   'fired'   — scheduled, will appear in 5s
+  //   'muted'   — toggle is off, nothing scheduled (this is the gating
+  //               proof: turn the toggle off, hit Test, expect 'muted')
+  //   'denied'  — OS-level notification permission denied
+  //   'web'     — running in PWA/browser, LocalNotifications no-ops
+  async scheduleCategoryTestNotification(
+    category: NotificationCategory,
+  ): Promise<{ outcome: 'fired'; fireAt: Date } | { outcome: 'muted' | 'denied' | 'web' }> {
+    if (!this.platform.is('hybrid')) return { outcome: 'web' };
+    if (!this.prefs[category]) return { outcome: 'muted' };
+    const granted = await this.ensurePermission();
+    if (!granted) return { outcome: 'denied' };
+    const sample = TEST_NOTIFICATION_COPY[category];
+    const fireAt = new Date(Date.now() + 5_000);
+    // Stable ID 8999 sits outside the 8000–8099 reminder range so
+    // applyPrefs() never cancels it. Reusing one ID across all category
+    // tests means a fresh tap supersedes any pending test notification.
+    await LocalNotifications.cancel({ notifications: [{ id: 8999 }] });
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: 8999,
+          title: sample.title,
+          body: sample.body,
+          schedule: { at: fireAt, allowWhileIdle: true },
+        },
+      ],
+    });
+    return { outcome: 'fired', fireAt };
   }
 
   // Re-evaluate scheduled local notifications against the current prefs.

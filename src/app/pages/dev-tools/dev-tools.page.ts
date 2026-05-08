@@ -2,7 +2,16 @@ import { Component } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { ToastController } from '@ionic/angular';
 import { ConferenceData } from '../../providers/conference-data';
+import {
+  NotificationsService,
+  NotificationCategory,
+} from '../../providers/notifications.service';
 import { environment } from '../../../environments/environment';
+
+interface NotifTestRow {
+  key: NotificationCategory;
+  label: string;
+}
 
 @Component({
   selector: 'app-dev-tools',
@@ -15,11 +24,54 @@ export class DevToolsPage {
   storageCount = 0;
   scanCount = 0;
 
+  // Order mirrors the Notifications settings page so the buttons line up
+  // visually with the toggles users would flip to test gating.
+  notifTests: NotifTestRow[] = [
+    { key: 'lightning', label: 'Lightning Talk sign-ups' },
+    { key: 'openSpace', label: 'Open Space sign-ups' },
+    { key: 'announcements', label: 'Announcements' },
+    { key: 'scheduleChanges', label: 'Schedule changes' },
+    { key: 'dailyDigest', label: 'Daily digest' },
+    { key: 'emergency', label: 'Emergency & safety' },
+  ];
+
   constructor(
     private storage: Storage,
     private toastCtrl: ToastController,
     private confData: ConferenceData,
+    private notifications: NotificationsService,
   ) {}
+
+  async testNotif(category: NotificationCategory, label: string) {
+    const result = await this.notifications.scheduleCategoryTestNotification(category);
+    let message: string;
+    let color: 'success' | 'warning' | 'medium' | 'danger';
+    switch (result.outcome) {
+      case 'fired':
+        message = `${label}: firing at ${result.fireAt.toLocaleTimeString()}.`;
+        color = 'success';
+        break;
+      case 'muted':
+        message = `${label}: toggle is OFF — gating works, no notification scheduled.`;
+        color = 'warning';
+        break;
+      case 'denied':
+        message = `${label}: OS notification permission denied.`;
+        color = 'danger';
+        break;
+      case 'web':
+        message = `${label}: only fires on iOS / Android.`;
+        color = 'medium';
+        break;
+    }
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 2500,
+      position: 'bottom',
+      color,
+    });
+    toast.present();
+  }
 
   async ionViewWillEnter() {
     await this.refreshStats();
