@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { MenuController, Platform, ToastController } from '@ionic/angular';
 
 import { SplashScreen } from '@capacitor/splash-screen';
-import { PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications';
+import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 
 import { Storage } from '@ionic/storage-angular';
 
@@ -106,34 +106,42 @@ export class AppComponent implements OnInit {
   }
 
   checkNotifications() {
-    PushNotifications.addListener('registration', token => {
-      console.info('Registration token: ', token.value);
+    // Single-stack push: @capacitor-firebase/messaging owns APNs/FCM
+    // registration, topic subscription, and foreground delivery. The
+    // older @capacitor/push-notifications plugin was removed because
+    // Capawesome explicitly warns the two cannot coexist (duplicate
+    // APNs swizzling, conflicting FirebaseMessagingService receivers).
+    FirebaseMessaging.addListener('tokenReceived', (event) => {
+      console.info('Registration token: ', event.token);
     });
-    PushNotifications.requestPermissions().then(result => {
-      if (result.receive === 'granted') {
-        PushNotifications.register();
-      }
+    FirebaseMessaging.requestPermissions().then((result) => {
+      if (result.receive !== 'granted') return;
+      // Calling getToken() also triggers APNs registration on iOS, so
+      // we don't need a separate register() step.
+      FirebaseMessaging.getToken().catch((err) => {
+        console.warn('FirebaseMessaging.getToken failed', err);
+      });
     });
-    PushNotifications.addListener(
-      'pushNotificationReceived',
-      async (notification: PushNotificationSchema) => {
-        // FCM pushes (emergency, announcements, schedule changes) — the
-        // toggle in Settings opts the device out of the underlying topic
-        // so users who turn a category off don't receive the push at all.
-        // This check is a defense in case staff send to all devices
-        // instead of a topic.
-        if (!this.notifications.shouldShowPushBanner()) return;
-        this.toastCtrl.create({
-          message: `${notification.title}: ${notification.body}`,
-          position: 'top',
-          buttons: [{
-            icon: 'close',
-            side: 'end',
-            role: 'cancel'
-          }]
-        }).then(toast => toast.present());
-      }
-    );
+    FirebaseMessaging.addListener('notificationReceived', async (event) => {
+      // FCM pushes (emergency, announcements, schedule changes) — the
+      // toggle in Settings opts the device out of the underlying topic
+      // so users who turn a category off don't receive the push at all.
+      // This check is a defense in case staff send to all devices
+      // instead of a topic.
+      if (!this.notifications.shouldShowPushBanner()) return;
+      const notification = event?.notification;
+      const title = notification?.title ?? 'PyCon US';
+      const body = notification?.body ?? '';
+      this.toastCtrl.create({
+        message: body ? `${title}: ${body}` : title,
+        position: 'top',
+        buttons: [{
+          icon: 'close',
+          side: 'end',
+          role: 'cancel',
+        }],
+      }).then((toast) => toast.present());
+    });
   }
 
   initializeApp() {

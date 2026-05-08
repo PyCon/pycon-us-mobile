@@ -6,7 +6,6 @@ import {
   ScheduleOptions,
   PermissionStatus,
 } from '@capacitor/local-notifications';
-import { PushNotifications } from '@capacitor/push-notifications';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { BehaviorSubject } from 'rxjs';
 
@@ -141,9 +140,18 @@ export class NotificationsService {
 
   private attachTokenListener() {
     if (!this.platform.is('hybrid')) return;
-    PushNotifications.addListener('registration', (token) => {
-      if (token?.value) this.fcmToken$.next(token.value);
+    FirebaseMessaging.addListener('tokenReceived', (event) => {
+      if (event?.token) this.fcmToken$.next(event.token);
     }).catch(() => undefined);
+    // tokenReceived only fires on rotation; on a fresh launch we may
+    // already have a token cached server-side. Pull it eagerly so the
+    // Diagnostics card on the Notifications page shows it immediately
+    // instead of waiting for the next rotation.
+    FirebaseMessaging.getToken()
+      .then((res) => {
+        if (res?.token) this.fcmToken$.next(res.token);
+      })
+      .catch(() => undefined);
   }
 
   async getPrefs(): Promise<NotificationPrefs> {
