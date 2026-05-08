@@ -19,6 +19,21 @@ interface SteeringCouncil {
   name: string;
   members: SteeringCouncilMember[];
   bio: string;
+  session?: any;
+}
+
+interface PanelMember {
+  name: string;
+  photo: string | null;
+  bio: string;
+}
+
+interface Panel {
+  name: string;
+  eyebrow: string;
+  members: PanelMember[];
+  intro: string;
+  session?: any;
 }
 
 @Component({
@@ -70,6 +85,55 @@ export class KeynoteSpeakersPage implements OnInit {
     bio: 'The Python Steering Council is a 5-person elected committee that assumes a mandate to maintain the quality and stability of the Python language and CPython interpreter, improve the contributor experience, formalize and maintain a relationship between the Python core team and the PSF, establish decision making processes for Python Enhancement Proposals, seek consensus among contributors and the Python core team, and resolve decisions and disputes in decision making among the language.',
   };
 
+  diversityPanel: Panel = {
+    name: 'D&I Panel: Python is for Everyone — Growing the Community Without Limits',
+    eyebrow: 'Hosted by the PSF Diversity & Inclusion Workgroup',
+    intro:
+      'A panel from the PSF Diversity & Inclusion Workgroup on growing the Python community without limits — bringing together organizers and contributors from PyLadies chapters across Brazil, the U.S., Ghana, and Malaysia.',
+    members: [
+      {
+        name: 'Jules',
+        photo: null,
+        bio:
+          'Jules (they/them, she/her) is a nonbinary Brazilian who is PyLadies Recife and PyLadies Brasil Co-organizer. Fullstack developer by daylight and artist by moonlight, they are always eager to support event organizers and help provide a more inclusive community at the Diversity and Inclusion Workgroup from PSF. Former board member from Python Brazil Association (APyB) from 2022 to 2026. AuDHD and STEMinist.',
+      },
+      {
+        name: 'Débora Azevedo',
+        photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/deborah.original.png',
+        bio:
+          'Débora is a public school teacher in Brazil, and one of the cofounders of PyLadies Brazil, the largest PyLadies chapter in the world. She’s a PhD student and she researches educational software development. She’s currently one of the organizers of Python Nordeste, a regional Python conference in Brazil, and a former PSF board member (2021–2024).',
+      },
+      {
+        name: 'Alla Barbalat',
+        photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/alla.original.png',
+        bio:
+          'Alla Barbalat began her career as a lawyer before transitioning into tech. She is the lead organizer of PyLadies San Francisco, an avid Python user, and a speaker on topics at the intersection of Python, AI, and law.',
+      },
+      {
+        name: 'Georgi Ker',
+        photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/georgi.original.jpg',
+        bio:
+          'Georgi Ker is the Director and a Fellow of the Python Software Foundation. She co-organizes PyLadiesCon and chairs the D&I Workgroup within the PSF. She is also one of the co-hosts of the podcast series "The Hidden Figures of Python" alongside Mariatta Wijaya, Cheuk Ting Ho, and Tereza Iofciu.',
+      },
+      {
+        name: 'Theresa Seyram Agbenyegah (Stancy)',
+        photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/Stancy-Portrait.original.jpg',
+        bio:
+          'Theresa Seyram Agbenyegah (mostly referred to in the Tech community as Stancy) is a Software Engineer, Open-Source advocate, and Social Entrepreneur. She currently serves as the Programmes and Events Lead for PyLadies Ghana and is a member of Python Ghana. She is a DSF member and a member of the DSF event support working group, a PSF Diversity and Inclusion workgroup member, an Outreach ambassador for the CHAOSS DEI workgroup, and a Django Girls organizer.',
+      },
+      {
+        name: 'Abhijeet Mote',
+        photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/MNTN_Matt-Lief-Anderson_2856-Edit.original.jpg',
+        bio:
+          'Abhijeet is a Lead Python AI Engineer and Fellow of the Python Software Foundation. He founded Python Penang, Malaysia, where he has helped grow the local developer community. He has spoken at international conferences including PyCon Italy, runs workshops, and mentors students and underrepresented groups in technology. His work focuses on scalable Python AI systems, distributed systems, data pipelines, and LLM-based applications across adtech, semiconductor, and healthcare.',
+      },
+    ],
+  };
+
+  // Fallback avatar for panelists without an uploaded photo. Reuses the
+  // global default so the placeholder matches the rest of the app.
+  panelistFallback = 'assets/img/person-circle-outline.png';
+
   constructor(
     public liveUpdateService: LiveUpdateService,
     private confData: ConferenceData,
@@ -89,6 +153,24 @@ export class KeynoteSpeakersPage implements OnInit {
             speaker.session = match;
           }
         });
+
+        // The D&I Panel ships as a kind="plenary" slot named
+        // "Diversity & Inclusion Panel" — not as a keynote — so look it
+        // up across all sessions, not just `keynoteSessions` above.
+        this.diversityPanel.session = data.sessions.find(
+          (s: any) =>
+            typeof s.name === 'string' &&
+            /diversity\s*(?:&|and)\s*inclusion\s+panel/i.test(s.name),
+        );
+        // Steering Council session link. The schedule slot is literally
+        // titled "Steering Council Panel" (after track-prefix stripping),
+        // not "Python Steering Council" — match flexibly so future title
+        // tweaks don't break the link.
+        this.steeringCouncil.session = data.sessions.find(
+          (s: any) =>
+            typeof s.name === 'string' &&
+            /steering\s+council/i.test(s.name),
+        );
       }
     });
   }

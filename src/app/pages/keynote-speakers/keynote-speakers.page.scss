@@ -148,3 +148,97 @@ ion-title {
   max-width: 56px;
   line-height: 1.2;
 }
+
+.ks-council-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin: 16px 0 20px;
+}
+
+.ks-council-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 110px;
+}
+
+.ks-council-photo-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid #3B3EA9;
+}
+
+.ks-council-name-large {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.25;
+  color: var(--ion-text-color);
+}
+
+.ks-card-panel {
+  .ks-panel-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ion-color-medium);
+    margin: 0 0 4px;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+
+  .ks-panel-intro {
+    font-size: 0.92rem;
+    color: var(--ion-color-step-700, #4a4a4a);
+    margin: 0 0 16px;
+  }
+}
+
+.ks-panel-members {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ks-panel-member {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ks-panel-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--ion-color-step-150, #e0e0e0);
+}
+
+.ks-panel-text {
+  flex: 1;
+  min-width: 0;
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--ion-color-medium);
+    line-height: 1.4;
+  }
+}

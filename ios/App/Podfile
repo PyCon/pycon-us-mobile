@@ -11,6 +11,8 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorFirebaseAnalytics', :path => '../../node_modules/@capacitor-firebase/analytics'
+  pod 'CapacitorFirebaseMessaging', :path => '../../node_modules/@capacitor-firebase/messaging'
   pod 'CapacitorMlkitBarcodeScanning', :path => '../../node_modules/@capacitor-mlkit/barcode-scanning'
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorDevice', :path => '../../node_modules/@capacitor/device'
@@ -19,8 +21,8 @@ def capacitor_pods
   pod 'CapacitorInappbrowser', :path => '../../node_modules/@capacitor/inappbrowser'
   pod 'CapacitorKeyboard', :path => '../../node_modules/@capacitor/keyboard'
   pod 'CapacitorLiveUpdates', :path => '../../node_modules/@capacitor/live-updates'
+  pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
   pod 'CapacitorNetwork', :path => '../../node_modules/@capacitor/network'
-  pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
   pod 'CapacitorShare', :path => '../../node_modules/@capacitor/share'
   pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
@@ -29,8 +31,10 @@ end
 
 target 'PyCon US' do
   capacitor_pods
-  # Add your Pods here
-  pod 'FirebaseMessaging'
+  # FirebaseMessaging is pulled transitively by CapacitorFirebaseMessaging
+  # (the @capacitor-firebase/messaging plugin) — no explicit pod needed.
+  # The plugin pins to ~> 11.7.0 on its v7 line; pinning our own version
+  # here causes "could not find compatible versions" in pod install.
 end
 
 post_install do |installer|

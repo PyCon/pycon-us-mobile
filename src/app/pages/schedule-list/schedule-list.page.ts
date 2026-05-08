@@ -159,6 +159,18 @@ export class ScheduleListPage implements OnInit {
       loader.present();
       this.displaySessions = [];
       this.confData.getSessions(this.sessionQueryText, this.excludeTracks).subscribe((sessions: any[]) => {
+        // Belt-and-suspenders: on the open-spaces page, restrict to
+        // sessions whose track is literally 'Open Space'. The
+        // excludeTracks filter already does this in theory, but if the
+        // initial async ordering ever gets restored (or a session has a
+        // missing/empty `tracks` array) we don't want posters leaking
+        // back onto this page. Equivalent guard for any other view that
+        // expects only one track is left for future cleanup.
+        if (this.isOpenSpaceView) {
+          sessions = sessions.filter(
+            (s: any) => s?.track === 'Open Space' || s?.tracks?.includes('Open Space'),
+          );
+        }
         this.sessions = sessions;
         this.generateSessions();
         setTimeout(() => {loader.dismiss()}, 100);
@@ -184,6 +196,12 @@ export class ScheduleListPage implements OnInit {
 
     this.confData.load().subscribe((data: any) => {
       if (data.sessions) {
+        // Build excludeTracks BEFORE fetching the filtered session list.
+        // Previously resetSessions() ran outside this subscribe, so by the
+        // time the filter executed excludeTracks was still empty and
+        // every session leaked through (e.g. posters showing on the
+        // open-spaces page). Move resetSessions inside so the filter
+        // sees a populated excludeTracks. PYMOBIL-bug.
         this.confData.getTracks().subscribe((tracks: any[]) => {
           tracks.forEach((track, index, arr) => {
             const trackNameToCompare = typeof track === 'string' ? track : track.name;
@@ -208,8 +226,8 @@ export class ScheduleListPage implements OnInit {
               this.excludeTracks.splice(i, 1);
             }
           }
+          this.resetSessions();
         });
-        this.resetSessions();
       }
     });
   }

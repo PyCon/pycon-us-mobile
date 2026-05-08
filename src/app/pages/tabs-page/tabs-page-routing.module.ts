@@ -126,6 +126,18 @@ const routes: Routes = [
         ]
       },
       {
+        path: 'notifications',
+        children: [
+          {
+            path: '',
+            loadChildren: () =>
+              import('../notification-settings/notification-settings.module').then(
+                m => m.NotificationSettingsPageModule,
+              ),
+          },
+        ],
+      },
+      {
         path: 'rooms',
         children: [
           {

@@ -99,6 +99,13 @@
            (click)="onDescriptionClick($event)">
       </div>
 
+      <div *ngIf="isOpenSpace && session?.siteUrl" class="open-space-site-link-row">
+        <a [href]="session.siteUrl" target="_blank" rel="noopener" class="open-space-site-link">
+          <ion-icon name="open-outline"></ion-icon>
+          View this open space on us.pycon.org
+        </a>
+      </div>
+
       <div *ngIf="isPosters && posters.length > 0" class="posters-list">
         <h2 class="posters-list-heading">Posters ({{posters.length}})</h2>
         <ion-item *ngFor="let poster of posters" lines="none" class="poster-item" detail="true" button="true"

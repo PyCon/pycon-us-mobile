@@ -8,6 +8,7 @@ import markdownToTxt from 'markdown-to-txt';
 
 import { UserData } from './user-data';
 import { environment } from '../../environments/environment';
+import { ROOM_LOCATIONS } from '../location-map/room-locations';
 
 @Injectable({
   providedIn: 'root'
@@ -63,8 +64,16 @@ export class ConferenceData {
   // Pretalx leaves cancelled-talk slots in the feed with name === kind,
   // no description, and no speakers. The web schedule hides them; without
   // this filter the mobile app shows a row literally titled "talk".
+  //
+  // CAREFUL: posters and breaks legitimately have this same shape
+  // (name="poster"/"break", empty description, no contact) — but they're
+  // *not* cancelled, they're collapsed/expanded later. Skip those kinds
+  // here so we don't accidentally drop them. Filtering out poster slots
+  // here was the cause of posters leaking onto every track page (their
+  // "Poster" track never got registered). PYMOBIL-117 / PYMOBIL-bug.
   private isPlaceholderSlot(slot: any): boolean {
     if (!slot || typeof slot.kind !== 'string') return false;
+    if (slot.kind === 'poster' || slot.kind === 'break') return false;
     const name = typeof slot.name === 'string' ? slot.name.trim().toLowerCase() : '';
     if (!name) return false;
     if (name !== slot.kind.toLowerCase()) return false;
@@ -201,6 +210,16 @@ export class ConferenceData {
     }
 
     data['open-spaces'].forEach((openSpace: any) => {
+      // Skip submissions that haven't been scheduled yet — un-roomed or
+      // un-timed entries are *proposals*, not confirmed sessions, and
+      // shouldn't appear on the schedule. The pretalx feed includes all
+      // submissions regardless of state.
+      if (!openSpace?.start || !openSpace?.end) return;
+      const startMs = new Date(openSpace.start).getTime();
+      const endMs = new Date(openSpace.end).getTime();
+      if (Number.isNaN(startMs) || Number.isNaN(endMs)) return;
+      const room = openSpace.room_display || openSpace.room || '';
+      if (!room.trim()) return;
       var start = new Date(openSpace.start);
       var end = new Date(openSpace.end);
       var session = {
@@ -228,6 +247,12 @@ export class ConferenceData {
         "id": openSpace.conf_key + 9000,
         "day": start.toLocaleDateString('en-us', {timeZone: environment.timezone, weekday: 'short'}),
         "imageUrl": this.resolveOpenSpaceImage(openSpace.image_url),
+        // Deep-link to the open-space modal on us.pycon.org. The website
+        // opens a <dialog> matching `#OpenSpace-<id>` on hash change
+        // (see pycon-site/static/js/lib/dialog.js, PR #712). conf_key is
+        // the OpenSpacesSignup PK on the website side. The page lives at
+        // /2026/schedule/open-spaces/, NOT /2026/schedule/conference/.
+        "siteUrl": `${environment.baseUrl}/2026/schedule/open-spaces/#OpenSpace-${openSpace.conf_key}`,
       }
       this.data.sessions.push(session);
 
@@ -749,6 +774,19 @@ export class ConferenceData {
       session.displayLocation = session.displayLocationOverride
         || (links.length > 0 ? links[0].name : (session.location || ''));
     });
+    // Seed empty entries for sprint-only rooms. Sprints aren't in
+    // data.sessions (the API ships them as a separate `sprints` array, not
+    // as schedule slots), so without this the Seaside S-rooms / ballrooms
+    // never appear in the Rooms list — even though they're real venues
+    // attendees need to find. PYMOBIL-120.
+    Object.values(ROOM_LOCATIONS).forEach((loc: any) => {
+      if (!loc?.sublabel || !/sprints/i.test(loc.sublabel)) return;
+      const slug = this.slugifyRoom(loc.label);
+      if (!roomMap.has(slug)) {
+        roomMap.set(slug, { name: loc.label, slug, sessions: [] });
+      }
+    });
+
     roomMap.forEach((room: any) => {
       room.sessions.sort(
         (a: any, b: any) =>

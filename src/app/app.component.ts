@@ -3,13 +3,15 @@ import { Router } from '@angular/router';
 import { MenuController, Platform, ToastController } from '@ionic/angular';
 
 import { SplashScreen } from '@capacitor/splash-screen';
-import { PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications';
+import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import { FirebaseAnalytics } from '@capacitor-firebase/analytics';
 
 import { Storage } from '@ionic/storage-angular';
 
 import { UserData, ThemeMode } from './providers/user-data';
 import { ConferenceData } from './providers/conference-data';
 import { LiveUpdateService } from './providers/live-update.service';
+import { NotificationsService } from './providers/notifications.service';
 import { environment } from '../environments/environment';
 
 @Component({
@@ -81,6 +83,7 @@ export class AppComponent implements OnInit {
     private toastCtrl: ToastController,
     public confData: ConferenceData,
     public liveUpdateService: LiveUpdateService,
+    public notifications: NotificationsService,
   ) {
     this.storage.create();
     this.initializeApp();
@@ -96,32 +99,61 @@ export class AppComponent implements OnInit {
     setTimeout(() => {
       this.checkNotifications();
       this.liveUpdateService.checkForUpdate();
+      // Load saved prefs and (re)schedule local sign-up reminders. Re-runs
+      // every cold start so missed/expired reminders get cleaned up and
+      // anything still in the future gets re-armed.
+      this.notifications.getPrefs().then(() => this.notifications.applyPrefs());
     }, 5000);
   }
 
   checkNotifications() {
-    PushNotifications.addListener('registration', token => {
-      console.info('Registration token: ', token.value);
+    // Single-stack push: @capacitor-firebase/messaging owns APNs/FCM
+    // registration, topic subscription, and foreground delivery. The
+    // older @capacitor/push-notifications plugin was removed because
+    // Capawesome explicitly warns the two cannot coexist (duplicate
+    // APNs swizzling, conflicting FirebaseMessagingService receivers).
+    FirebaseMessaging.addListener('tokenReceived', (event) => {
+      console.info('Registration token: ', event.token);
     });
-    PushNotifications.requestPermissions().then(result => {
-      if (result.receive === 'granted') {
-        PushNotifications.register();
-      }
+    FirebaseMessaging.requestPermissions().then((result) => {
+      if (result.receive !== 'granted') return;
+      // Calling getToken() also triggers APNs registration on iOS, so
+      // we don't need a separate register() step.
+      FirebaseMessaging.getToken().catch((err) => {
+        console.warn('FirebaseMessaging.getToken failed', err);
+      });
     });
-    PushNotifications.addListener(
-      'pushNotificationReceived',
-      async (notification: PushNotificationSchema) => {
-        this.toastCtrl.create({
-          message: `${notification.title}: ${notification.body}`,
-          position: 'top',
-          buttons: [{
-            icon: 'close',
-            side: 'end',
-            role: 'cancel'
-          }]
-        }).then(toast => toast.present());
-      }
-    );
+    FirebaseMessaging.addListener('notificationReceived', async (event) => {
+      // FCM pushes (emergency, announcements, schedule changes) — the
+      // toggle in Settings opts the device out of the underlying topic
+      // so users who turn a category off don't receive the push at all.
+      // This check is a defense in case staff send to all devices
+      // instead of a topic.
+      const showed = this.notifications.shouldShowPushBanner();
+      // Log every received push so we can compare delivery counts to
+      // opt-in rates in Firebase Analytics. The `topic` data field is
+      // attached server-side when staff fire a campaign via topic.
+      FirebaseAnalytics.logEvent({
+        name: 'notification_received',
+        params: {
+          topic: event?.notification?.data?.['topic'] ?? 'unknown',
+          banner_shown: showed,
+        },
+      }).catch(() => undefined);
+      if (!showed) return;
+      const notification = event?.notification;
+      const title = notification?.title ?? 'PyCon US';
+      const body = notification?.body ?? '';
+      this.toastCtrl.create({
+        message: body ? `${title}: ${body}` : title,
+        position: 'top',
+        buttons: [{
+          icon: 'close',
+          side: 'end',
+          role: 'cancel',
+        }],
+      }).then((toast) => toast.present());
+    });
   }
 
   initializeApp() {
