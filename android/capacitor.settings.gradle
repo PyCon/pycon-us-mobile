@@ -49,6 +49,3 @@ project(':capacitor-status-bar').projectDir = new File('../node_modules/@capacit
 
 include ':ebarooni-capacitor-calendar'
 project(':ebarooni-capacitor-calendar').projectDir = new File('../node_modules/@ebarooni/capacitor-calendar/android')
-
-include ':capacitor-native-settings'
-project(':capacitor-native-settings').projectDir = new File('../node_modules/capacitor-native-settings/android')
