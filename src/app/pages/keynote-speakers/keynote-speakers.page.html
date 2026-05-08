@@ -27,7 +27,7 @@
         <ion-icon slot="start" name="calendar-outline" color="primary"></ion-icon>
         <ion-label>
           <h3>{{ speaker.session.name }}</h3>
-          <p>{{ speaker.session.day }} {{ speaker.session.timeStart }} &mdash; {{ speaker.session.location }}</p>
+          <p>{{ speaker.session.day }} {{ speaker.session.timeStart }} &mdash; {{ speaker.session.displayLocation || speaker.session.location }}</p>
         </ion-label>
       </ion-item>
     </ion-card-content>
@@ -35,14 +35,49 @@
 
   <ion-card class="ks-card ks-card-council">
     <ion-card-content>
-      <div class="ks-council-photos">
-        <div *ngFor="let member of steeringCouncil.members" class="ks-council-member">
-          <img [src]="member.photo" [alt]="member.name" class="ks-council-photo" />
-          <span class="ks-council-name">{{ member.name }}</span>
+      <h2>{{ steeringCouncil.name }}</h2>
+      <div class="ks-council-grid">
+        <div *ngFor="let member of steeringCouncil.members" class="ks-council-cell">
+          <img [src]="member.photo" [alt]="member.name" class="ks-council-photo-large" />
+          <span class="ks-council-name-large">{{ member.name }}</span>
         </div>
       </div>
-      <h2>{{ steeringCouncil.name }}</h2>
       <p>{{ steeringCouncil.bio }}</p>
+      <ion-item *ngIf="steeringCouncil.session" button="true"
+                [routerLink]="'/app/tabs/schedule/session/' + steeringCouncil.session.id"
+                detail="true" lines="none" class="ks-session-link">
+        <ion-icon slot="start" name="calendar-outline" color="primary"></ion-icon>
+        <ion-label>
+          <h3>{{ steeringCouncil.session.name }}</h3>
+          <p>{{ steeringCouncil.session.day }} {{ steeringCouncil.session.timeStart }} &mdash; {{ steeringCouncil.session.displayLocation || steeringCouncil.session.location }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="ks-card ks-card-panel">
+    <ion-card-content>
+      <p class="ks-panel-eyebrow">{{ diversityPanel.eyebrow }}</p>
+      <h2>{{ diversityPanel.name }}</h2>
+      <p class="ks-panel-intro">{{ diversityPanel.intro }}</p>
+      <div class="ks-panel-members">
+        <div *ngFor="let member of diversityPanel.members" class="ks-panel-member">
+          <img [src]="member.photo || panelistFallback" [alt]="member.name" class="ks-panel-photo" />
+          <div class="ks-panel-text">
+            <h3>{{ member.name }}</h3>
+            <p>{{ member.bio }}</p>
+          </div>
+        </div>
+      </div>
+      <ion-item *ngIf="diversityPanel.session" button="true"
+                [routerLink]="'/app/tabs/schedule/session/' + diversityPanel.session.id"
+                detail="true" lines="none" class="ks-session-link">
+        <ion-icon slot="start" name="calendar-outline" color="primary"></ion-icon>
+        <ion-label>
+          <h3>{{ diversityPanel.session.name }}</h3>
+          <p>{{ diversityPanel.session.day }} {{ diversityPanel.session.timeStart }} &mdash; {{ diversityPanel.session.displayLocation || diversityPanel.session.location }}</p>
+        </ion-label>
+      </ion-item>
     </ion-card-content>
   </ion-card>
 

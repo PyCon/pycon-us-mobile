@@ -18,6 +18,11 @@ interface KeynoteAbstract {
   title?: string;
   eyebrow?: string;
   paragraphs: string[];
+  // Names from `keynoteSpeakers` to render alongside the abstract. Used
+  // for panels (D&I Panel, Steering Council, etc.) where the session
+  // title doesn't include the speaker names directly so the substring
+  // match below can't pick them up.
+  panelists?: string[];
 }
 
 @Component({
@@ -68,6 +73,46 @@ export class SessionDetailPage implements OnDestroy {
         'English \u2014 Maintaining one of the most widely used programming languages in the world is not just a matter of code. It means carrying decisions that affect millions of people, being part of a community that never sleeps, and finding reasons to keep going when nobody asks you to and nobody pays you for it. The world of software is shifting, and with it, the rules of the game for those who hold it together from the inside. In this talk I will share what I have learned after years in the trenches of open source: what it really means to be a maintainer, what you gain, what you lose, and why in spite of everything it is still worth it.',
       ],
     },
+    {
+      match: ['Diversity & Inclusion Panel', 'D&I Panel', 'Python is for Everyone'],
+      title: 'D&I Panel: Python is for Everyone \u2014 Growing the Community Without Limits',
+      eyebrow: 'Panel hosted by the PSF Diversity & Inclusion Workgroup',
+      paragraphs: [
+        'A panel from the PSF Diversity & Inclusion Workgroup on growing the Python community without limits \u2014 bringing together organizers and contributors from PyLadies chapters across Brazil, the U.S., Ghana, and Malaysia.',
+      ],
+      panelists: [
+        'Jules',
+        'D\u00e9bora Azevedo',
+        'Alla Barbalat',
+        'Georgi Ker',
+        'Theresa Seyram Agbenyegah',
+        'Abhijeet Mote',
+      ],
+    },
+    {
+      match: ['Steering Council Panel', 'Steering Council'],
+      title: 'Python Steering Council Panel',
+      eyebrow: 'Annual address from the Python Steering Council',
+      paragraphs: [
+        'The Python Steering Council is a 5-person elected committee that assumes a mandate to maintain the quality and stability of the Python language and CPython interpreter, improve the contributor experience, formalize and maintain a relationship between the Python core team and the PSF, establish decision making processes for Python Enhancement Proposals, seek consensus among contributors and the Python core team, and resolve decisions and disputes in decision making among the language.',
+      ],
+      panelists: [
+        'Barry Warsaw',
+        'Donghee Na',
+        'Pablo Galindo Salgado',
+        'Savannah Ostrowski',
+        'Thomas Wouters',
+      ],
+    },
+    {
+      // Amanda's keynote-speakers page entry has no abstract title yet \u2014
+      // this is rendered as a single body paragraph. Source:
+      // https://us.pycon.org/2026/about/keynote-speakers/#amanda-casari
+      match: ['amanda casari', 'Amanda Casari'],
+      paragraphs: [
+        'amanda casari is an engineer and researcher who has worked in many technical and socio-technical disciplines for over 20 years, including developer relations, product management, data science, and underwater robotics. amanda was named an External Faculty member of the Vermont Complex Systems Center in 2021 and co-authored Feature Engineering for Machine Learning Principles and Techniques for Data Scientists for O\u2019Reilly. amanda is persistently fascinated by complexity, the differences between the systems we aim to create and the ones that emerge, roller derby, and pie.',
+      ],
+    },
   ];
 
   private keynoteSpeakers: Record<string, any> = {
@@ -90,6 +135,54 @@ export class SessionDetailPage implements OnDestroy {
     'Pablo Galindo Salgado': {
       photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/Pablo_Galindo_Salgado.original.jpg',
       bio: 'CPython core developer and Theoretical Physicist. Currently serving on the Python Steering Council in his 6th term and release manager for Python 3.10 and 3.11.',
+    },
+    // D&I Panel — six panelists. The session-detail enrichment matches by
+    // substring on the session name; for the panel, the talk name is
+    // "Diversity & Inclusion Panel" and the panelist names below all
+    // appear in the abstract paragraphs above. Keep these names in lowercase
+    // for case-insensitive matching when needed.
+    'Jules': {
+      photo: 'assets/img/person-circle-outline.png',
+      bio: 'Jules (they/them, she/her) is a nonbinary Brazilian who is PyLadies Recife and PyLadies Brasil Co-organizer. Fullstack developer by daylight and artist by moonlight, they are always eager to support event organizers and help provide a more inclusive community at the Diversity and Inclusion Workgroup from PSF. Former board member from Python Brazil Association (APyB) from 2022 to 2026. AuDHD and STEMinist.',
+    },
+    'Débora Azevedo': {
+      photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/deborah.original.png',
+      bio: 'Débora is a public school teacher in Brazil, and one of the cofounders of PyLadies Brazil, the largest PyLadies chapter in the world. She’s a PhD student and she researches educational software development. She’s currently one of the organizers of Python Nordeste, a regional Python conference in Brazil, and a former PSF board member (2021–2024).',
+    },
+    'Alla Barbalat': {
+      photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/alla.original.png',
+      bio: 'Alla Barbalat began her career as a lawyer before transitioning into tech. She is the lead organizer of PyLadies San Francisco, an avid Python user, and a speaker on topics at the intersection of Python, AI, and law.',
+    },
+    'Georgi Ker': {
+      photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/georgi.original.jpg',
+      bio: 'Georgi Ker is the Director and a Fellow of the Python Software Foundation. She co-organizes PyLadiesCon and chairs the D&I Workgroup within the PSF. She is also one of the co-hosts of the podcast series "The Hidden Figures of Python" alongside Mariatta Wijaya, Cheuk Ting Ho, and Tereza Iofciu.',
+    },
+    'Theresa Seyram Agbenyegah': {
+      photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/Stancy-Portrait.original.jpg',
+      bio: 'Theresa Seyram Agbenyegah (mostly referred to in the Tech community as Stancy) is a Software Engineer, Open-Source advocate, and Social Entrepreneur. She currently serves as the Programmes and Events Lead for PyLadies Ghana and is a member of Python Ghana. She is a DSF member and a member of the DSF event support working group, a PSF Diversity and Inclusion workgroup member, an Outreach ambassador for the CHAOSS DEI workgroup, and a Django Girls organizer.',
+    },
+    'Abhijeet Mote': {
+      photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/MNTN_Matt-Lief-Anderson_2856-Edit.original.jpg',
+      bio: 'Abhijeet is a Lead Python AI Engineer and Fellow of the Python Software Foundation. He founded Python Penang, Malaysia, where he has helped grow the local developer community. He has spoken at international conferences including PyCon Italy, runs workshops, and mentors students and underrepresented groups in technology. His work focuses on scalable Python AI systems, distributed systems, data pipelines, and LLM-based applications across adtech, semiconductor, and healthcare.',
+    },
+    // Python Steering Council panelists. Pablo is already above with his
+    // standalone keynote bio — kept that copy; the Steering Council panel
+    // pulls all five via the abstract's `panelists` list.
+    'Barry Warsaw': {
+      photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/Barry_PyCon.max-165x165.jpg',
+      bio: 'Python Steering Council member.',
+    },
+    'Donghee Na': {
+      photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/donghee_na.max-165x165.jpg',
+      bio: 'Python Steering Council member and CPython core developer.',
+    },
+    'Savannah Ostrowski': {
+      photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/savannah.max-165x165.jpg',
+      bio: 'Python Steering Council member.',
+    },
+    'Thomas Wouters': {
+      photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/Thomas_Wouters.max-165x165.jpg',
+      bio: 'Python Steering Council member, CPython core developer, and release manager.',
     },
   };
 
@@ -133,6 +226,12 @@ export class SessionDetailPage implements OnDestroy {
       this.session = foundSession;
       this.isOpenSpace = this.session?.track === 'Open Space' || this.session?.tracks?.includes('Open Space');
       this.isKeynote = this.session?.tracks?.includes('keynote') || this.session?.track === 'Keynote';
+      // Panels (D&I, Steering Council) ship as kind="plenary" not
+      // "keynote", so isKeynote is false — but they still need the
+      // panelist photos + abstract treatment. Detect by name pattern.
+      const isPanel =
+        typeof this.session?.name === 'string' &&
+        /(?:diversity\s*(?:&|and)\s*inclusion\s+panel|steering\s+council\s+panel)/i.test(this.session.name);
       // Only the *collapsed* "Posters" schedule slot lists every poster;
       // individual poster session-detail pages show their own description.
       this.isPosters = this.session?.track === 'Poster' && this.session?.name === 'Posters';
@@ -148,17 +247,29 @@ export class SessionDetailPage implements OnDestroy {
       this.keynoteData = [];
       this.keynoteAbstract = null;
 
-      // Enrich keynote sessions with speaker photo/bio. Collect every
-      // matching speaker so co-hosted keynotes (e.g. "Rachell Calhoun &
-      // Tim Schilling") render all speakers, not just the first match.
-      if (this.isKeynote) {
+      // Enrich keynote and panel sessions with speaker photo/bio.
+      // Keynotes match by substring on the session title (works because
+      // a keynote's title typically includes the speaker's name).
+      // Panels (D&I, Steering Council) match by abstract: the abstract
+      // entry carries an explicit `panelists` list of names to render,
+      // since the session title doesn't name them.
+      if (this.isKeynote || isPanel) {
         const sessionName = (this.session?.name || '').toLowerCase();
-        this.keynoteData = Object.entries(this.keynoteSpeakers)
-          .filter(([name]) => sessionName.includes(name.toLowerCase()))
-          .map(([name, data]) => ({ name, ...data }));
         this.keynoteAbstract = this.keynoteAbstracts.find(
           (a) => a.match.some((m) => sessionName.includes(m.toLowerCase()))
         ) || null;
+        if (this.keynoteAbstract?.panelists?.length) {
+          this.keynoteData = this.keynoteAbstract.panelists
+            .map((name) => {
+              const data = this.keynoteSpeakers[name];
+              return data ? { name, ...data } : null;
+            })
+            .filter((entry): entry is { name: string; photo: string; bio: string } => entry !== null);
+        } else {
+          this.keynoteData = Object.entries(this.keynoteSpeakers)
+            .filter(([name]) => sessionName.includes(name.toLowerCase()))
+            .map(([name, data]) => ({ name, ...data }));
+        }
       }
 
       if (this.session?.id != null) {
