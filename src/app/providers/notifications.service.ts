@@ -67,10 +67,10 @@ const TOPIC_BY_CATEGORY: Partial<Record<NotificationCategory, string>> = {
 // each time `applyPrefs()` runs.
 //
 // PyCon US 2026 calendar: Thu = May 14, Fri = May 15, Sat = May 16, Sun = May 17.
-// (PYMOBIL-106's issue body had off-by-one dates — fixed here.)
-// Fri/Sat open-space times were flagged as needing verification by staff;
-// the 5:00 AM placeholder kept here so the infra ships — adjust if staff
-// publish different times.
+// Open-space windows confirmed against pycon-site/load-open-spaces.py:
+//   Fri slots → signup opens Thu May 14, 5:00 PM
+//   Sat slots → signup opens Sat May 16, 8:00 AM
+//   Sun slots → signup opens Sun May 17, 8:00 AM
 const REMINDERS: Array<Omit<ScheduledReminder, 'id'>> = [
   // Lightning talks
   {
@@ -101,20 +101,20 @@ const REMINDERS: Array<Omit<ScheduledReminder, 'id'>> = [
   {
     category: 'openSpace',
     title: 'Open Space sign-ups open soon',
-    body: 'Thursday slots open at 5:00 AM PDT.',
-    fireAt: new Date('2026-05-14T04:45:00-07:00'),
+    body: 'Friday slots open Thursday at 5:00 PM PDT.',
+    fireAt: new Date('2026-05-14T16:45:00-07:00'),
   },
   {
     category: 'openSpace',
     title: 'Open Space sign-ups open soon',
-    body: 'Friday slots open at 5:00 AM PDT.',
-    fireAt: new Date('2026-05-15T04:45:00-07:00'),
+    body: 'Saturday slots open at 8:00 AM PDT.',
+    fireAt: new Date('2026-05-16T07:45:00-07:00'),
   },
   {
     category: 'openSpace',
     title: 'Open Space sign-ups open soon',
-    body: 'Saturday slots open at 5:00 AM PDT.',
-    fireAt: new Date('2026-05-16T04:45:00-07:00'),
+    body: 'Sunday slots open at 8:00 AM PDT.',
+    fireAt: new Date('2026-05-17T07:45:00-07:00'),
   },
 ];
 
