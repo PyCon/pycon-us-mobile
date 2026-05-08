@@ -210,6 +210,16 @@ export class ConferenceData {
     }
 
     data['open-spaces'].forEach((openSpace: any) => {
+      // Skip submissions that haven't been scheduled yet — un-roomed or
+      // un-timed entries are *proposals*, not confirmed sessions, and
+      // shouldn't appear on the schedule. The pretalx feed includes all
+      // submissions regardless of state.
+      if (!openSpace?.start || !openSpace?.end) return;
+      const startMs = new Date(openSpace.start).getTime();
+      const endMs = new Date(openSpace.end).getTime();
+      if (Number.isNaN(startMs) || Number.isNaN(endMs)) return;
+      const room = openSpace.room_display || openSpace.room || '';
+      if (!room.trim()) return;
       var start = new Date(openSpace.start);
       var end = new Date(openSpace.end);
       var session = {
@@ -237,6 +247,12 @@ export class ConferenceData {
         "id": openSpace.conf_key + 9000,
         "day": start.toLocaleDateString('en-us', {timeZone: environment.timezone, weekday: 'short'}),
         "imageUrl": this.resolveOpenSpaceImage(openSpace.image_url),
+        // Deep-link to the open-space modal on us.pycon.org. The website
+        // opens a <dialog> matching `#OpenSpace-<id>` on hash change
+        // (see pycon-site/static/js/lib/dialog.js, PR #712). conf_key is
+        // the OpenSpacesSignup PK on the website side. The page lives at
+        // /2026/schedule/open-spaces/, NOT /2026/schedule/conference/.
+        "siteUrl": `${environment.baseUrl}/2026/schedule/open-spaces/#OpenSpace-${openSpace.conf_key}`,
       }
       this.data.sessions.push(session);
 

@@ -117,6 +117,14 @@
                         <img [src]="session.imageUrl" class="open-space-image">
                       </ion-col>
                     </ion-row>
+                    <ion-row *ngIf="session.siteUrl">
+                      <ion-col size="12">
+                        <a [href]="session.siteUrl" target="_blank" rel="noopener" class="open-space-site-link" (click)="$event.stopPropagation()">
+                          <ion-icon name="open-outline"></ion-icon>
+                          View on us.pycon.org
+                        </a>
+                      </ion-col>
+                    </ion-row>
                   </ion-grid>
                 </ion-card-content>
               </ion-card>

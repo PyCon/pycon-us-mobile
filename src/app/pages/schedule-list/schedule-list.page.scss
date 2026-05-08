@@ -165,3 +165,17 @@ ion-title {
   border-radius: 4px;
   object-fit: cover;
 }
+
+.open-space-site-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--ion-color-primary);
+  text-decoration: none;
+  margin-top: 4px;
+
+  ion-icon { font-size: 0.9rem; }
+
+  &:hover { text-decoration: underline; }
+}
