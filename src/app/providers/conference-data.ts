@@ -63,8 +63,16 @@ export class ConferenceData {
   // Pretalx leaves cancelled-talk slots in the feed with name === kind,
   // no description, and no speakers. The web schedule hides them; without
   // this filter the mobile app shows a row literally titled "talk".
+  //
+  // CAREFUL: posters and breaks legitimately have this same shape
+  // (name="poster"/"break", empty description, no contact) — but they're
+  // *not* cancelled, they're collapsed/expanded later. Skip those kinds
+  // here so we don't accidentally drop them. Filtering out poster slots
+  // here was the cause of posters leaking onto every track page (their
+  // "Poster" track never got registered). PYMOBIL-117 / PYMOBIL-bug.
   private isPlaceholderSlot(slot: any): boolean {
     if (!slot || typeof slot.kind !== 'string') return false;
+    if (slot.kind === 'poster' || slot.kind === 'break') return false;
     const name = typeof slot.name === 'string' ? slot.name.trim().toLowerCase() : '';
     if (!name) return false;
     if (name !== slot.kind.toLowerCase()) return false;
