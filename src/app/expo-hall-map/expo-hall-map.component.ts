@@ -53,6 +53,15 @@ export class ExpoHallMapComponent implements OnInit, AfterViewInit {
     '606': 'assets/img/pycon-us-2026-logo.svg',
   };
 
+  // Booths whose printed lockup on the base floor plan already includes
+  // everything we want to show (logo + label baked in). The sponsor API
+  // would otherwise overlay its full marketing lockup on top, doubling
+  // up the wordmark inside the white card. Skip the API logoUrl
+  // assignment for these booths so only the printed base shows.
+  private readonly SUPPRESS_OVERLAY_LOGO: ReadonlySet<string> = new Set([
+    '116', // Cubist Systematic Strategies — base print already has cubes
+  ]);
+
   // Booth coordinates in the original 8000×5655 floor plan image.
   // Names are the seed labels — they get overwritten with the live sponsor
   // name (and gain logoUrl/level/description) once the API responds.
@@ -304,7 +313,9 @@ export class ExpoHallMapComponent implements OnInit, AfterViewInit {
           if (sponsor.booth_number == null) continue;
           const booth = this.booths.find(b => b.id === String(sponsor.booth_number));
           if (!booth) continue;
-          booth.logoUrl = sponsor.logo_url;
+          if (!this.SUPPRESS_OVERLAY_LOGO.has(booth.id)) {
+            booth.logoUrl = sponsor.logo_url;
+          }
           booth.level = sponsor.level;
           booth.description = sponsor.description;
           if (sponsor.name) booth.name = sponsor.name;
