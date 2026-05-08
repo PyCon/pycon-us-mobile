@@ -77,20 +77,6 @@
     pointer-events: none;
   }
 
-  // PSF booth (407) has a different printed layout: "PSF" label sits in
-  // the dark band ABOVE the white card and "407" sits below. The default
-  // top: 8% / height: 60% positioning makes the logo bleed up into the
-  // dark band over the printed "PSF" text. Tighten + shift down so the
-  // logo lands inside the white card.
-  &#boothgroup-407 .booth-img,
-  #booth407 .booth-img {
-    top: 28%;
-    width: 50%;
-    height: 44%;
-    max-width: 50%;
-    max-height: 44%;
-  }
-
   &:active .booth,
   &:hover .booth {
     background: rgba(240, 192, 64, 0.28);

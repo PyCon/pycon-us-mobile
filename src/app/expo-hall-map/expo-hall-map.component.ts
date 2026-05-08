@@ -48,19 +48,9 @@ export class ExpoHallMapComponent implements OnInit, AfterViewInit {
   // Static logo fallbacks for booths that don't come through the sponsor API
   // (PSF, community booths, attendee lounge, etc.). Keyed by booth id.
   private readonly STATIC_BOOTH_LOGOS: { [id: string]: string } = {
-    '139': 'assets/img/phemeral-logo.png',
-    '407': 'assets/img/the-psf-logo.png',
+    '407': 'assets/img/python-logo.png',
     '606': 'assets/img/pycon-us-2026-logo.svg',
   };
-
-  // Booths whose printed lockup on the base floor plan already includes
-  // everything we want to show (logo + label baked in). The sponsor API
-  // would otherwise overlay its full marketing lockup on top, doubling
-  // up the wordmark inside the white card. Skip the API logoUrl
-  // assignment for these booths so only the printed base shows.
-  private readonly SUPPRESS_OVERLAY_LOGO: ReadonlySet<string> = new Set([
-    '116', // Cubist Systematic Strategies — base print already has cubes
-  ]);
 
   // Booth coordinates in the original 8000×5655 floor plan image.
   // Names are the seed labels — they get overwritten with the live sponsor
@@ -76,16 +66,13 @@ export class ExpoHallMapComponent implements OnInit, AfterViewInit {
     { id: '141', name: 'Tetrix',                            top: 1191, left: 2418, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '240', name: 'Mission',                           top: 1191, left: 2684, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '138', name: 'Sublimage',                         top: 1458, left: 1991, width: 250, height: 250, imgW: 8000, imgH: 5655 },
-    { id: '139', name: 'Phemeral',                          top: 1458, left: 2418, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '238', name: 'Jinja.App',                         top: 1458, left: 2684, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '635', name: 'ClickHouse',                        top: 1592, left: 6409, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '735', name: 'Python en Español',                 top: 1592, left: 7449, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '734', name: 'Djangonauts / DSF',                 top: 1600, left: 6693, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '136', name: 'Capisclo',                          top: 1725, left: 1991, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '137', name: 'Arcjet',                            top: 1725, left: 2418, width: 250, height: 250, imgW: 8000, imgH: 5655 },
-    // Astral 336 backed out of sponsorship — booth left empty so the
-    // overlay doesn't render their logo. The base image's blank booth
-    // remains unchanged.
+    { id: '336', name: 'Astral',                            top: 1734, left: 3547, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '236', name: 'Minimus',                           top: 1743, left: 2693, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '237', name: 'Tower Research Capital',            top: 1743, left: 3280, width: 250, height: 250, imgW: 8000, imgH: 5655 },
     { id: '335', name: 'Pydantic',                          top: 1743, left: 4080, width: 250, height: 500, imgW: 8000, imgH: 5655 },
@@ -313,9 +300,7 @@ export class ExpoHallMapComponent implements OnInit, AfterViewInit {
           if (sponsor.booth_number == null) continue;
           const booth = this.booths.find(b => b.id === String(sponsor.booth_number));
           if (!booth) continue;
-          if (!this.SUPPRESS_OVERLAY_LOGO.has(booth.id)) {
-            booth.logoUrl = sponsor.logo_url;
-          }
+          booth.logoUrl = sponsor.logo_url;
           booth.level = sponsor.level;
           booth.description = sponsor.description;
           if (sponsor.name) booth.name = sponsor.name;
