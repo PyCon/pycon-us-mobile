@@ -10,6 +10,7 @@ import { Storage } from '@ionic/storage-angular';
 import { UserData, ThemeMode } from './providers/user-data';
 import { ConferenceData } from './providers/conference-data';
 import { LiveUpdateService } from './providers/live-update.service';
+import { NotificationsService } from './providers/notifications.service';
 import { environment } from '../environments/environment';
 
 @Component({
@@ -81,6 +82,7 @@ export class AppComponent implements OnInit {
     private toastCtrl: ToastController,
     public confData: ConferenceData,
     public liveUpdateService: LiveUpdateService,
+    public notifications: NotificationsService,
   ) {
     this.storage.create();
     this.initializeApp();
@@ -96,6 +98,10 @@ export class AppComponent implements OnInit {
     setTimeout(() => {
       this.checkNotifications();
       this.liveUpdateService.checkForUpdate();
+      // Load saved prefs and (re)schedule local sign-up reminders. Re-runs
+      // every cold start so missed/expired reminders get cleaned up and
+      // anything still in the future gets re-armed.
+      this.notifications.getPrefs().then(() => this.notifications.applyPrefs());
     }, 5000);
   }
 
@@ -111,6 +117,12 @@ export class AppComponent implements OnInit {
     PushNotifications.addListener(
       'pushNotificationReceived',
       async (notification: PushNotificationSchema) => {
+        // FCM pushes (emergency, announcements, schedule changes) — the
+        // toggle in Settings opts the device out of the underlying topic
+        // so users who turn a category off don't receive the push at all.
+        // This check is a defense in case staff send to all devices
+        // instead of a topic.
+        if (!this.notifications.shouldShowPushBanner()) return;
         this.toastCtrl.create({
           message: `${notification.title}: ${notification.body}`,
           position: 'top',

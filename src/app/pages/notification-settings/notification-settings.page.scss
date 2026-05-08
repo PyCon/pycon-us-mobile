@@ -1,0 +1,139 @@
+ion-header {
+  background: linear-gradient(180deg, #3B3EA9 0%, #3B3EA9 100%);
+  &::after { display: none; }
+}
+
+ion-toolbar {
+  --background: transparent;
+  --border-color: transparent;
+  --color: #ffffff;
+}
+
+ion-toolbar ion-menu-button {
+  --color: #ffffff;
+}
+
+ion-title {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+
+  &.title-visible {
+    opacity: 1;
+  }
+}
+
+.notif-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 16px 40px;
+  background: linear-gradient(180deg, #3B3EA9 23.5%, #101136 53.29%);
+  color: #fff;
+  text-align: center;
+
+  .notif-hero-icon {
+    font-size: 72px;
+    margin-bottom: 16px;
+    color: #FFD779;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 6px 16px 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+}
+
+.notif-list {
+  margin: -24px 16px 0;
+  border-radius: 16px;
+  background: var(--ion-card-background, #ffffff);
+  box-shadow: 0 8px 32px rgba(16, 17, 54, 0.15);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+
+  ion-item {
+    --background: transparent;
+  }
+
+  .notif-master {
+    --background: var(--ion-color-step-50, #f7f8fb);
+    --inner-padding-top: 14px;
+    --inner-padding-bottom: 14px;
+
+    .notif-label h2 {
+      font-weight: 700;
+    }
+  }
+
+  .notif-label {
+    h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 0.25rem;
+      white-space: normal;
+    }
+    p {
+      font-size: 0.8rem;
+      color: var(--ion-color-medium);
+      margin: 0;
+      white-space: normal;
+    }
+  }
+}
+
+.notif-token-card {
+  margin: 16px;
+  border-radius: 12px;
+  background: var(--ion-card-background, #ffffff);
+  box-shadow: 0 2px 8px rgba(16, 17, 54, 0.08);
+  overflow: hidden;
+
+  ion-item {
+    --background: transparent;
+  }
+
+  ion-item-divider {
+    --background: var(--ion-color-step-50, #f4f4f4);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ion-color-medium);
+    min-height: 32px;
+  }
+
+  .notif-token {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.7rem;
+    word-break: break-all;
+    user-select: all;
+    -webkit-user-select: all;
+    color: var(--ion-color-medium);
+  }
+}
+
+.notif-note {
+  margin: 24px 16px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 1.1rem;
+    color: var(--ion-color-medium);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+  }
+}
