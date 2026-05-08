@@ -62,8 +62,10 @@ const TOPIC_BY_CATEGORY: Partial<Record<NotificationCategory, string>> = {
 // signup times change — the service rebuilds its schedule from this list
 // each time `applyPrefs()` runs.
 //
-// Source: PYMOBIL-106 issue body. Fri/Sat open-space times in the source
-// were flagged as needing verification — adjust here if pycon staff
+// PyCon US 2026 calendar: Thu = May 14, Fri = May 15, Sat = May 16, Sun = May 17.
+// (PYMOBIL-106's issue body had off-by-one dates — fixed here.)
+// Fri/Sat open-space times were flagged as needing verification by staff;
+// the 5:00 AM placeholder kept here so the infra ships — adjust if staff
 // publish different times.
 const REMINDERS: Array<Omit<ScheduledReminder, 'id'>> = [
   // Lightning talks
@@ -71,44 +73,44 @@ const REMINDERS: Array<Omit<ScheduledReminder, 'id'>> = [
     category: 'lightning',
     title: 'Lightning Talk sign-ups open soon',
     body: 'Friday morning slot — signup opens at 9:00 AM, deadline 1:00 PM.',
-    fireAt: new Date('2026-05-16T08:45:00-07:00'),
+    fireAt: new Date('2026-05-15T08:45:00-07:00'),
   },
   {
     category: 'lightning',
     title: 'Lightning Talk sign-ups open soon',
     body: 'Friday evening slot — signup opens at 5:00 AM, deadline 9:00 AM.',
-    fireAt: new Date('2026-05-16T04:45:00-07:00'),
+    fireAt: new Date('2026-05-15T04:45:00-07:00'),
   },
   {
     category: 'lightning',
     title: 'Lightning Talk sign-ups open soon',
     body: 'Saturday morning slot — signup opens at 9:00 AM, deadline 1:00 PM.',
-    fireAt: new Date('2026-05-17T08:45:00-07:00'),
+    fireAt: new Date('2026-05-16T08:45:00-07:00'),
   },
   {
     category: 'lightning',
     title: 'Lightning Talk sign-ups open soon',
     body: 'Saturday afternoon slot — signup opens at 5:00 AM, deadline 9:00 AM.',
-    fireAt: new Date('2026-05-17T04:45:00-07:00'),
+    fireAt: new Date('2026-05-16T04:45:00-07:00'),
   },
   // Open spaces
   {
     category: 'openSpace',
     title: 'Open Space sign-ups open soon',
     body: 'Thursday slots open at 5:00 AM PDT.',
-    fireAt: new Date('2026-05-15T04:45:00-07:00'),
+    fireAt: new Date('2026-05-14T04:45:00-07:00'),
   },
   {
     category: 'openSpace',
     title: 'Open Space sign-ups open soon',
     body: 'Friday slots open at 5:00 AM PDT.',
-    fireAt: new Date('2026-05-16T04:45:00-07:00'),
+    fireAt: new Date('2026-05-15T04:45:00-07:00'),
   },
   {
     category: 'openSpace',
     title: 'Open Space sign-ups open soon',
     body: 'Saturday slots open at 5:00 AM PDT.',
-    fireAt: new Date('2026-05-17T04:45:00-07:00'),
+    fireAt: new Date('2026-05-16T04:45:00-07:00'),
   },
 ];
 
@@ -228,7 +230,6 @@ export class NotificationsService {
           title: r.title,
           body: r.body,
           schedule: { at: r.fireAt, allowWhileIdle: true },
-          smallIcon: 'ic_stat_notify',
         });
       });
       if (toSchedule.length > 0) {
