@@ -14,6 +14,12 @@
             android:resource="@drawable/ic_launcher"
         />
 
+        <!-- Firebase Analytics: we don't run ads, so disable collection
+             of the Android advertising ID. Paired with the AD_ID
+             uses-permission removal below; both required to honestly
+             answer "No" on Play Console's advertising-ID declaration. -->
+        <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
+
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"
             android:name="org.pycon.us.MainActivity"
@@ -40,5 +46,13 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- firebase-analytics auto-merges com.google.android.gms.permission.AD_ID
+         into the manifest. Strip it: we declared "No" on Play Console's
+         advertising-ID question and disabled adid_collection_enabled
+         above. Without the explicit removal here, the merged manifest
+         still requests AD_ID and Play Console blocks the release. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+
     <uses-sdk tools:overrideLibrary="com.google.zxing.client.android" />
 </manifest>

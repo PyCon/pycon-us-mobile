@@ -1,5 +1,13 @@
 [
 	{
+		"pkg": "@capacitor-firebase/analytics",
+		"classpath": "io.capawesome.capacitorjs.plugins.firebase.analytics.FirebaseAnalyticsPlugin"
+	},
+	{
+		"pkg": "@capacitor-firebase/messaging",
+		"classpath": "io.capawesome.capacitorjs.plugins.firebase.messaging.FirebaseMessagingPlugin"
+	},
+	{
 		"pkg": "@capacitor-mlkit/barcode-scanning",
 		"classpath": "io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.BarcodeScannerPlugin"
 	},
@@ -32,12 +40,12 @@
 		"classpath": "com.capacitorjs.liveupdates.LiveUpdatesPlugin"
 	},
 	{
-		"pkg": "@capacitor/network",
-		"classpath": "com.capacitorjs.plugins.network.NetworkPlugin"
+		"pkg": "@capacitor/local-notifications",
+		"classpath": "com.capacitorjs.plugins.localnotifications.LocalNotificationsPlugin"
 	},
 	{
-		"pkg": "@capacitor/push-notifications",
-		"classpath": "com.capacitorjs.plugins.pushnotifications.PushNotificationsPlugin"
+		"pkg": "@capacitor/network",
+		"classpath": "com.capacitorjs.plugins.network.NetworkPlugin"
 	},
 	{
 		"pkg": "@capacitor/share",
