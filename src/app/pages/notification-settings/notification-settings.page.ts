@@ -11,7 +11,7 @@ import {
 // App Store / Play Store URLs for the "please update" banner. Tap the
 // link in the banner → opens the store listing in the appropriate
 // system app. Bundle id is `org.pycon.us.2023.onsite`.
-const APP_STORE_URL = 'https://apps.apple.com/us/app/pycon-us/id6450461066';
+const APP_STORE_URL = 'https://apps.apple.com/us/app/pycon-us-2023/id6446810296';
 const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=org.pycon.us';
 
