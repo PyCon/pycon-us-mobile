@@ -42,9 +42,11 @@
         (click)="onBoothTap(booth)"
         [class.highlighted]="highlightedBoothId === booth.id">
         <div class="boothgroupinner">
-          <div [id]="'booth' + booth.id" class="booth">
-            <img *ngIf="booth.logoUrl" class="booth-img" [src]="booth.logoUrl" [alt]="booth.name + ' logo'" />
-          </div>
+          <!-- Empty booth div — purely a tap target. Logos are baked
+               into the floor-plan image; rendering a sponsor logoUrl
+               on top of the booth duplicates the printed mark. The
+               sponsor logo still appears in the tap popup below. -->
+          <div [id]="'booth' + booth.id" class="booth"></div>
         </div>
       </div>
 
