@@ -216,19 +216,31 @@ export class PyConAPI {
   }
 
   async captureMaskViolation(accessCode: string, options?: {notes?: string; force?: boolean}): Promise<any> {
-    const method = 'GET';
-    const params: string[] = ['attendee_access_code=' + encodeURIComponent(accessCode)];
-    if (options?.notes) {
-      params.push('notes=' + encodeURIComponent(options.notes));
-    }
-    if (options?.force) {
-      params.push('force=true');
-    }
-    const url = '/2026/api/v1/mask_violations/capture/?' + params.join('&');
-    const body = '';
+    // The name-search-with-notes flow goes through POST so the free-text
+    // notes never end up in URL access logs / browser history; the raw
+    // badge-scan flow (no notes, no force) keeps the simpler GET shape.
+    const useBody = !!(options?.notes || options?.force);
+    const url = '/2026/api/v1/mask_violations/capture/'
+      + (useBody ? '' : '?attendee_access_code=' + encodeURIComponent(accessCode));
 
-    const authHeaders = await this.buildRequestAuthHeaders(method, url, body);
+    if (useBody) {
+      const payload: any = {attendee_access_code: accessCode};
+      if (options?.notes) payload.notes = options.notes;
+      if (options?.force) payload.force = true;
+      const body = JSON.stringify(payload);
+      const authHeaders = await this.buildRequestAuthHeaders('POST', url, body);
+      return this.http.post(
+        this.base + url,
+        body,
+        {headers: {...authHeaders, 'Content-Type': 'application/json'}},
+      ).pipe(timeout(5000), catchError(error => {
+        console.log('Unable to capture violation, ' + error)
+          throw error;
+        })
+      );
+    }
 
+    const authHeaders = await this.buildRequestAuthHeaders('GET', url, '');
     return this.http.get(
       this.base + url,
       {headers: authHeaders}
