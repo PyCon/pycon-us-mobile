@@ -81,7 +81,6 @@ export class SessionDetailPage implements OnDestroy {
         'A panel from the PSF Diversity & Inclusion Workgroup on growing the Python community without limits \u2014 bringing together organizers and contributors from PyLadies chapters across Brazil, the U.S., Ghana, and Malaysia.',
       ],
       panelists: [
-        'Jules',
         'D\u00e9bora Azevedo',
         'Alla Barbalat',
         'Georgi Ker',
@@ -141,10 +140,6 @@ export class SessionDetailPage implements OnDestroy {
     // "Diversity & Inclusion Panel" and the panelist names below all
     // appear in the abstract paragraphs above. Keep these names in lowercase
     // for case-insensitive matching when needed.
-    'Jules': {
-      photo: 'assets/img/person-circle-outline.png',
-      bio: 'Jules (they/them, she/her) is a nonbinary Brazilian who is PyLadies Recife and PyLadies Brasil Co-organizer. Fullstack developer by daylight and artist by moonlight, they are always eager to support event organizers and help provide a more inclusive community at the Diversity and Inclusion Workgroup from PSF. Former board member from Python Brazil Association (APyB) from 2022 to 2026. AuDHD and STEMinist.',
-    },
     'Débora Azevedo': {
       photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/deborah.original.png',
       bio: 'Débora is a public school teacher in Brazil, and one of the cofounders of PyLadies Brazil, the largest PyLadies chapter in the world. She’s a PhD student and she researches educational software development. She’s currently one of the organizers of Python Nordeste, a regional Python conference in Brazil, and a former PSF board member (2021–2024).',

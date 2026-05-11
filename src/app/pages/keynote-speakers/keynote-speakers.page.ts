@@ -92,12 +92,6 @@ export class KeynoteSpeakersPage implements OnInit {
       'A panel from the PSF Diversity & Inclusion Workgroup on growing the Python community without limits — bringing together organizers and contributors from PyLadies chapters across Brazil, the U.S., Ghana, and Malaysia.',
     members: [
       {
-        name: 'Jules',
-        photo: null,
-        bio:
-          'Jules (they/them, she/her) is a nonbinary Brazilian who is PyLadies Recife and PyLadies Brasil Co-organizer. Fullstack developer by daylight and artist by moonlight, they are always eager to support event organizers and help provide a more inclusive community at the Diversity and Inclusion Workgroup from PSF. Former board member from Python Brazil Association (APyB) from 2022 to 2026. AuDHD and STEMinist.',
-      },
-      {
         name: 'Débora Azevedo',
         photo: 'https://pycon-assets.s3.amazonaws.com/2026/media/images/deborah.original.png',
         bio:
