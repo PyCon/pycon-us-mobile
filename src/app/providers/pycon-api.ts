@@ -198,9 +198,9 @@ export class PyConAPI {
     );
   }
 
-  async captureMaskViolation(accessCode: string): Promise<any> {
+  async fetchCocAttendees(): Promise<any> {
     const method = 'GET';
-    const url = '/2026/api/v1/mask_violations/capture/?attendee_access_code=' + accessCode;
+    const url = '/2026/api/v1/mask_violations/attendees/';
     const body = '';
 
     const authHeaders = await this.buildRequestAuthHeaders(method, url, body);
@@ -208,7 +208,31 @@ export class PyConAPI {
     return this.http.get(
       this.base + url,
       {headers: authHeaders}
-    ).pipe(timeout(2000), catchError(error => {
+    ).pipe(timeout(15000), catchError(error => {
+      console.log('Unable to fetch CoC attendees, ' + error)
+        throw error;
+      })
+    );
+  }
+
+  async captureMaskViolation(accessCode: string, options?: {notes?: string; force?: boolean}): Promise<any> {
+    const method = 'GET';
+    const params: string[] = ['attendee_access_code=' + encodeURIComponent(accessCode)];
+    if (options?.notes) {
+      params.push('notes=' + encodeURIComponent(options.notes));
+    }
+    if (options?.force) {
+      params.push('force=true');
+    }
+    const url = '/2026/api/v1/mask_violations/capture/?' + params.join('&');
+    const body = '';
+
+    const authHeaders = await this.buildRequestAuthHeaders(method, url, body);
+
+    return this.http.get(
+      this.base + url,
+      {headers: authHeaders}
+    ).pipe(timeout(5000), catchError(error => {
       console.log('Unable to capture violation, ' + error)
         throw error;
       })

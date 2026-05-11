@@ -19,7 +19,62 @@
   color: var(--ion-color-medium, #888);
   font-size: 0.95rem;
   line-height: 1.45;
-  margin: 0;
+  margin: 0 0 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.search-section {
+  padding: 0 8px;
+}
+
+.attendee-searchbar {
+  --background: var(--ion-color-light, #f4f5f8);
+  --border-radius: 12px;
+  padding: 4px 4px 0;
+}
+
+.search-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  color: var(--ion-color-medium, #888);
+  font-size: 0.9rem;
+
+  ion-spinner {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.search-error {
+  color: var(--ion-color-warning-shade, #b58300);
+
+  ion-icon {
+    font-size: 1.1rem;
+  }
+}
+
+.attendee-list {
+  background: transparent;
+  padding: 0 8px;
+
+  ion-item {
+    --background: transparent;
+    --inner-padding-end: 8px;
+
+    h3 {
+      font-weight: 600;
+    }
+
+    .empty-label {
+      color: var(--ion-color-medium, #888);
+      font-style: italic;
+    }
+  }
 }
 
 .last-scan-card {
@@ -86,4 +141,9 @@
 ::ng-deep .mycomponent-wider-popover {
   --width: 95%;
   --max-width: 400px;
+}
+
+::ng-deep .coc-confirm-alert .alert-message {
+  white-space: pre-line;
+  text-align: left;
 }
