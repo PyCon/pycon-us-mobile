@@ -22,6 +22,29 @@ build:
 
 capsync:
 	npm run capsync
+	@$(MAKE) --no-print-directory check-no-dev-url
+
+# Fail loudly if a livereload `server.url` got baked into the synced
+# Capacitor configs. `make ios-live` injects it; `make capsync` should
+# strip it. If it slips through into an Xcode/AS archive, every user
+# white-screens because the WebView tries to reach a LAN dev server.
+# (Caused production incident on 26.2.0 — never again.)
+check-no-dev-url:
+	@bad=0; \
+	for f in ios/App/App/capacitor.config.json android/app/src/main/assets/capacitor.config.json; do \
+		if [ -f "$$f" ] && grep -q '"url"' "$$f"; then \
+			echo "ERROR: $$f contains server.url — likely from a stale 'make ios-live' run."; \
+			grep -n '"url"' "$$f"; \
+			bad=1; \
+		fi; \
+	done; \
+	if [ $$bad -ne 0 ]; then \
+		echo ""; \
+		echo "Refusing to ship a config with a dev server URL baked in."; \
+		echo "Re-run 'make capsync' to regenerate, or inspect the synced files manually."; \
+		exit 1; \
+	fi
+.PHONY: check-no-dev-url
 
 lint:
 	npm run lint
@@ -44,13 +67,21 @@ android:
 ios:
 	npx ionic cap run ios --prod
 
-# Live reload development on devices
+# Live reload development on devices.
+# `ionic cap run --livereload` injects a `server.url` pointing at this
+# laptop's LAN IP into the synced capacitor.config.json. If that file
+# ships into an Xcode archive, every user white-screens (the WebView
+# tries to reach the LAN IP and times out — see 26.2.0 incident).
+# The trap below re-runs `cap sync` whenever this target exits, so the
+# config is clean again as soon as you Ctrl+C out of the dev session.
 ios-live:
 	@echo "Make sure you have Xcode installed!"
+	@trap 'echo "[ios-live] Auto-cleaning dev URL from synced config..."; npx ionic cap sync ios --no-build >/dev/null 2>&1' EXIT INT TERM; \
 	npx ionic cap run ios --livereload --external
 
 android-live:
 	@echo "Make sure you have Android Studio installed!"
+	@trap 'echo "[android-live] Auto-cleaning dev URL from synced config..."; npx ionic cap sync android --no-build >/dev/null 2>&1' EXIT INT TERM; \
 	npx ionic cap run android --livereload --external
 
 clean:

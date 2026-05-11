@@ -114,6 +114,7 @@
 			buildConfigurationList = 504EC3161FED79650016851F /* Build configuration list for PBXNativeTarget "PyCon US" */;
 			buildPhases = (
 				6634F4EFEBD30273BCE97C65 /* [CP] Check Pods Manifest.lock */,
+				1D7744632FB0BAE50091121D /* Check capacitor.config.json for dev URL */,
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
@@ -182,6 +183,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		1D7744632FB0BAE50091121D /* Check capacitor.config.json for dev URL */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Check capacitor.config.json for dev URL";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Only enforce on Release builds and Archive actions. Debug/livereload\n# builds intentionally inject server.url (that's how livereload works) —\n# we just don't want it shipping. ACTION=install fires on Archive.\nif [ \"$CONFIGURATION\" != \"Release\" ] && [ \"$ACTION\" != \"install\" ]; then\n  echo \"[dev-url-check] Skipping for $CONFIGURATION/$ACTION (livereload builds may legitimately set server.url)\"\n  exit 0\nfi\nCONFIG=\"${SRCROOT}/App/capacitor.config.json\"\nif [ -f \"$CONFIG\" ] && /usr/bin/grep -q '\"url\"' \"$CONFIG\"; then\n  echo \"error: capacitor.config.json contains server.url on a Release/Archive build — looks like a stale 'ionic cap run --livereload' baked in. Run 'make capsync' from repo root and re-archive.\"\n  /usr/bin/grep -n '\"url\"' \"$CONFIG\"\n  exit 1\nfi\n";
+		};
 		6634F4EFEBD30273BCE97C65 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -381,7 +401,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.2.0;
+				MARKETING_VERSION = 26.2.1;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = org.pycon.us.2023.onsite;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -412,7 +432,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.2.0;
+				MARKETING_VERSION = 26.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.pycon.us.2023.onsite;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

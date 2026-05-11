@@ -1,4 +1,8 @@
 ext {
+    // minSdk 34 / iOS 18 are intentional: only target OS versions still
+    // receiving vendor security updates. Devices below — Samsung S10,
+    // Motorola Edge Plus, anything stuck on Android 13 or older — are
+    // out of support and we don't carry that maintenance burden.
     minSdkVersion = 34
     compileSdkVersion = 35
     targetSdkVersion = 35
