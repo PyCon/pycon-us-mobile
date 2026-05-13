@@ -49,6 +49,10 @@ See [CONTRIBUTING.md](https://github.com/ionic-team/ionic-conference-app/blob/ma
 
 1. Run `ionic cap run android --prod`
 
+The app supports Android 13 (API 33) and newer. A prebuilt debug APK is
+checked in at [`releases/pycon-us-26.2.1-android13-debug.apk`](releases/pycon-us-26.2.1-android13-debug.apk)
+for sideloading on devices that can't reach the Play Store.
+
 ### iOS
 
 1. Run `ionic cap run ios --prod`
