@@ -141,7 +141,7 @@ export class PyConAPI {
     return this.http.get(
       this.base + url,
       {headers: authHeaders}
-    ).pipe(timeout(2000), catchError(error => {
+    ).pipe(timeout(20000), catchError(error => {
       console.log('Unable to fetch mobile state, ' + error)
         throw error;
       })
@@ -173,7 +173,7 @@ export class PyConAPI {
     return this.http.get(
       this.base + url,
       {headers: authHeaders}
-    ).pipe(timeout(2000), catchError(error => {
+    ).pipe(timeout(10000), catchError(error => {
       console.log('Unable to fetch mobile state, ' + error);
       throw error;
       })
