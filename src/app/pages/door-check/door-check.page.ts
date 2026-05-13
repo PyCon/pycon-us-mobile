@@ -61,8 +61,33 @@ export class DoorCheckPage implements OnInit, OnDestroy {
     return this.redeemable_categories.find(x => x.id === categoryId)?.name
   }
 
+  // Tutorial product names are prefixed with "<DayAbbr> <Mon> <DD> <H:MM> <AM|PM> - Title"
+  // (e.g. "Wed May 13 9:00 AM - All about decorators"). A naive alphabetical
+  // sort puts Fri before Thu before Wed and 1pm before 9am because '1' < '9'.
+  // Pull the date/time out and sort chronologically; non-tutorial products
+  // (t-shirts, swag) lack the prefix and fall through to alphabetical via
+  // the tiebreaker.
+  private static productSortKey(name: string): number {
+    const m = name.match(/^(?:\w{3,9}\s+)?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\s+(\d{1,2}):(\d{2})\s+(AM|PM)\b/i);
+    if (!m) return Number.MAX_SAFE_INTEGER;
+    const months: Record<string, number> = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+    const month = months[m[1].toLowerCase()] ?? 0;
+    const day = parseInt(m[2], 10);
+    let hour = parseInt(m[3], 10);
+    const minute = parseInt(m[4], 10);
+    const ampm = m[5].toUpperCase();
+    if (ampm === 'PM' && hour !== 12) hour += 12;
+    if (ampm === 'AM' && hour === 12) hour = 0;
+    return Date.UTC(2026, month, day, hour, minute);
+  }
+
   refreshProducts() {
-    this.display_products = this.filterProducts().sort(function(a, b){if (a.name < b.name) return -1; if (a.name > b.name) return 1; return 0;});
+    this.display_products = this.filterProducts().sort((a, b) => {
+      const ka = DoorCheckPage.productSortKey(a.name);
+      const kb = DoorCheckPage.productSortKey(b.name);
+      if (ka !== kb) return ka - kb;
+      return a.name.localeCompare(b.name);
+    });
     this.filtered_products = this.display_products;
     this.productSearch = '';
     this.product = null;
@@ -207,7 +232,7 @@ export class DoorCheckPage implements OnInit, OnDestroy {
               for (var category in attendeeDataAny.redeemable_products_by_category) {
                 attendeeDataAny.redeemable_products_by_category[category].forEach((product) => {
                   quantity += product.redeemable;
-                  productQuantities.set(product, product.redeemable);
+                  productQuantities.set(product.product_id, product.redeemable);
                 })
               }
             }
