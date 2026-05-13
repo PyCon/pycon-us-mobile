@@ -73,15 +73,17 @@
 </ion-content>
 
 <ion-footer>
-  <ion-card *ngIf="last_scan" class="last-scan-card" [color]="last_scan.status ? 'success' : 'danger'">
+  <ion-card *ngIf="last_scan" class="last-scan-card"
+            [color]="!last_scan.status ? 'danger' : (last_scan.already ? 'warning' : 'success')">
     <ion-card-content>
       <div class="last-scan-row">
         <ion-icon
-          [name]="last_scan.status ? 'checkmark-circle-outline' : 'alert-circle-outline'"
+          [name]="!last_scan.status ? 'alert-circle-outline' : (last_scan.already ? 'time-outline' : 'checkmark-circle-outline')"
           aria-hidden="true">
         </ion-icon>
         <div class="last-scan-text">
-          <strong *ngIf="last_scan.status">Attendee has access</strong>
+          <strong *ngIf="last_scan.status && !last_scan.already">Checked in</strong>
+          <strong *ngIf="last_scan.status && last_scan.already">Already checked in</strong>
           <strong *ngIf="!last_scan.status">Entry not permitted</strong>
           <code>{{ last_scan.code }}</code>
         </div>

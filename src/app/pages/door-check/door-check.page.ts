@@ -193,13 +193,20 @@ export class DoorCheckPage implements OnInit, OnDestroy {
     }
   }
 
-  displayLastScan(accessCode: string, access: boolean, quantity: number, productQuantities: Map<string, number>, scannedCode: string) {
+  async displayLastScan(accessCode: string, access: boolean, quantity: number, productQuantities: Map<string, number>, scannedCode: string) {
+    // A `synced-door-check-<code>` storage key is left behind by a previously
+    // completed scan + sync on this device, so its presence means this is at
+    // least the second time we're seeing this badge. Show the orange
+    // "Already checked in" state instead of green "Checked in" — useful for
+    // staff to catch buddy-pass / re-entry attempts.
+    const alreadySynced = !!(await this.storage.get('synced-door-check-' + accessCode));
     if (access && quantity > 0) {
       this.storeScan(accessCode, access, productQuantities, scannedCode);
     }
     this.last_scan = {
       "status": access ? quantity : quantity,
-      "code": accessCode
+      "code": accessCode,
+      "already": access && alreadySynced,
     };
     this.detectorRef.detectChanges();
     this.last_scan_timeout = setTimeout(this.clearLastScan, 5000);
