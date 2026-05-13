@@ -157,12 +157,16 @@ export class DoorCheckPage implements OnInit, OnDestroy {
 
 
     await this.pycon.redeemProducts(payload).then((data) => {
-      data.subscribe(redemptionData => {
-        this.storage.set('synced-door-check-' + accessCode, {...redemptionData, ...pending}).then((value) => {
-          this.storage.remove('pending-door-check-' + accessCode);
-
-        });
-      })
+      data.subscribe(
+        redemptionData => {
+          this.storage.set('synced-door-check-' + accessCode, {...redemptionData, ...pending}).then((value) => {
+            this.storage.remove('pending-door-check-' + accessCode);
+          });
+        },
+        err => {
+          console.warn('door-check sync failed, will retry on next cycle', accessCode, err);
+        }
+      )
     })
   }
 
