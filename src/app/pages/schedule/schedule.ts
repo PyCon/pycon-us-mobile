@@ -108,10 +108,12 @@ export class SchedulePage implements OnInit, OnDestroy {
   }
 
   jumpToNow() {
+    this.currentTime = new Date();
     if (this.dayIndex !== this.todayIndex) {
       this.dayIndex = this.todayIndex;
       this.updateSchedule();
     }
+    this.changeDetectorRef.detectChanges();
     setTimeout(() => this.scrollToCurrentTime(), 300);
   }
 
