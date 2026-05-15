@@ -111,7 +111,7 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
     }
   }
 
-  openRedemptionModal = async (redemptionData) => {
+  openRedemptionModal = async (redemptionData, scannedRawValue?: string, scannedAt?: string) => {
     clearTimeout(this.scan_timeout);
     this.ignore_scans = true;
     const modal = await this.modalCtrl.create({
@@ -139,7 +139,17 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
         if (this.scanning) await this.addListeners();
         return;
       }
-      const payload: any = {attendee_access_code: data.accessCode};
+      // The API view writes a DoorCheck row for every non-permanent
+      // redemption (e.g. shirts). DoorCheck.scanned_at is a non-null
+      // DateTimeField — if we omit `scanned_at` here the backend coerces
+      // it to "" and the .save() 500s with `invalid input syntax for
+      // type timestamp`. Same shape as door-check.page.ts:152.
+      const validator = scannedRawValue ? (scannedRawValue.split(':')[1] ?? '') : '';
+      const payload: any = {
+        attendee_access_code: data.accessCode,
+        badge_validator: validator,
+        scanned_at: scannedAt ?? new Date().toISOString(),
+      };
       for (const [key, value] of toRedeemEntries) {
         payload['product-redeem-' + key] = key;
         payload['product-' + key + '-quantity'] = value;
@@ -217,14 +227,20 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
     if (result.barcodes && !this.ignore_scans) {
       await this.removeListeners();
       clearTimeout(this.last_scan_timeout);
+      // Capture rawValue + scan timestamp now so the redemption POST can
+      // include badge_validator + scanned_at, matching the door-check
+      // payload. Without these the backend's DoorCheck.save() 500s on an
+      // empty DateTimeField and the redemption silently fails.
+      const rawValue = result.barcodes[0].rawValue as string;
+      const scannedAt = new Date().toISOString();
       await this.pycon.fetchAttendeeProducts(
-        result.barcodes[0].rawValue.split(':')[0], this.category, this.mode
+        rawValue.split(':')[0], this.category, this.mode
       ).then((data) => {
         data.subscribe(
           redemptionData => {
             if (redemptionData) {
               console.log(redemptionData);
-              this.openRedemptionModal(redemptionData)
+              this.openRedemptionModal(redemptionData, rawValue, scannedAt)
             }
           },
           error => {
