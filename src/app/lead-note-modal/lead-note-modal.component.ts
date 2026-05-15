@@ -12,6 +12,7 @@ export class LeadNoteModalComponent implements OnInit {
 
   interestLevel: string = '';
   freeformNote: string = '';
+  readonly maxNoteLength = 4000;
   followUpActions = [
     { label: 'Send info', emoji: '📧', checked: false },
     { label: 'Demo', emoji: '🎯', checked: false },
@@ -53,7 +54,9 @@ export class LeadNoteModalComponent implements OnInit {
       });
     }
 
-    const notesMatch = raw.match(/Notes: ([\s\S]*?)$/m);
+    // Notes section is always last, so capture everything after "Notes: " to end of string.
+    // Previously used /m which made $ stop at the first newline, silently dropping subsequent lines.
+    const notesMatch = raw.match(/Notes: ([\s\S]*)$/);
     if (notesMatch) {
       this.freeformNote = notesMatch[1].trim();
     } else if (!interestMatch && !followUpMatch) {

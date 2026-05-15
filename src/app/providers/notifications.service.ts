@@ -30,7 +30,7 @@ export interface NotificationPrefs {
 
 interface ScheduledReminder {
   id: number;
-  category: 'lightning' | 'openSpace';
+  category: 'lightning' | 'openSpace' | 'announcements';
   title: string;
   body: string;
   fireAt: Date;
@@ -68,11 +68,14 @@ const TOPIC_BY_CATEGORY: Partial<Record<NotificationCategory, string>> = {
 //
 // PyCon US 2026 calendar: Thu = May 14, Fri = May 15, Sat = May 16, Sun = May 17.
 //
-// Lightning talks: submissions are continuous via the PyCon US dashboard
-// (gated by waffle flag `lightning_talk_signups_open` in pycon-site).
-// Organizers select at lunchtime each day for that evening + the next
-// morning's slots — so the meaningful submission cycles are Fri & Sat
-// mornings. Talk slots are Fri 6 PM, Sat 8 AM, Sat 5:45 PM, Sun 8 AM.
+// Lightning talks: per-slot signup windows live on
+// symposion_schedule_slot.signup_opens / signup_deadline. Verified against
+// the prod DB dump — each day has two cycles:
+//   Morning cycle (5 AM open → 9 AM deadline PDT)  → tonight's slot
+//   Midday cycle  (9 AM open → 1 PM deadline PDT)  → tomorrow morning's slot
+// We fire one reminder per day at 9 AM PDT — the inflection point where
+// tonight closes and tomorrow morning opens. Copy targets the next-morning
+// slot since the evening one is no longer submittable at that moment.
 //
 // Open-space windows confirmed against pycon-site/load-open-spaces.py:
 //   Fri slots → signup opens Thu May 14, 5:00 PM
@@ -80,16 +83,19 @@ const TOPIC_BY_CATEGORY: Partial<Record<NotificationCategory, string>> = {
 //   Sun slots → signup opens Sun May 17, 8:00 AM
 const REMINDERS: Array<Omit<ScheduledReminder, 'id'>> = [
   // Lightning talks — two daily selection cycles (Fri & Sat lunch).
+  // Fires at 9:00 AM PDT — same moment the tonight slot's signup window
+  // closes and the next-morning slot's window opens (deadline 1 PM PDT).
+  // Copy reflects what's actually still submittable at this hour.
   {
     category: 'lightning',
     title: 'Lightning Talk sign-ups are open',
-    body: 'Submit on the PyCon US dashboard. Speakers picked at lunch for tonight (6 PM) and Saturday morning (8 AM).',
+    body: "Submit on the PyCon US dashboard for Saturday morning's lightning talks. Speakers picked by 1 PM.",
     fireAt: new Date('2026-05-15T09:00:00-07:00'),
   },
   {
     category: 'lightning',
     title: 'Last call: Lightning Talk sign-ups',
-    body: 'Submit on the PyCon US dashboard. Speakers picked at lunch for tonight (5:45 PM) and Sunday morning (8 AM).',
+    body: "Submit on the PyCon US dashboard for Sunday morning's lightning talks. Speakers picked by 1 PM.",
     fireAt: new Date('2026-05-16T09:00:00-07:00'),
   },
   // Open spaces
@@ -110,6 +116,45 @@ const REMINDERS: Array<Omit<ScheduledReminder, 'id'>> = [
     title: 'Open Space sign-ups open soon',
     body: 'Sunday slots open at 8:00 AM PDT.',
     fireAt: new Date('2026-05-17T07:45:00-07:00'),
+  },
+  // Keynotes & plenary panels — fire 15 minutes before each starts.
+  // Times sourced from pycon-site/load-breaks-and-plenaries.py (ground truth).
+  // Gated by the `announcements` toggle to avoid adding a new pref category.
+  {
+    category: 'announcements',
+    title: 'Keynote starting in 15 min',
+    body: 'Lin Qiao — Pacific Ballroom (Arena). Starts 9:45 AM.',
+    fireAt: new Date('2026-05-15T09:30:00-07:00'),
+  },
+  {
+    category: 'announcements',
+    title: 'D&I Panel starting in 15 min',
+    body: 'Diversity & Inclusion Panel — Pacific Ballroom (Arena). Starts 9:00 AM.',
+    fireAt: new Date('2026-05-16T08:45:00-07:00'),
+  },
+  {
+    category: 'announcements',
+    title: 'Keynote starting in 15 min',
+    body: 'Pablo Galindo Salgado (En Español) — Pacific Ballroom (Arena). Starts 9:25 AM.',
+    fireAt: new Date('2026-05-16T09:10:00-07:00'),
+  },
+  {
+    category: 'announcements',
+    title: 'Keynote starting in 15 min',
+    body: 'amanda casari — Pacific Ballroom (Arena). Starts 9:00 AM.',
+    fireAt: new Date('2026-05-17T08:45:00-07:00'),
+  },
+  {
+    category: 'announcements',
+    title: 'Keynote starting in 15 min',
+    body: 'Rachell Calhoun & Tim Schilling — Pacific Ballroom (Arena). Starts 3:15 PM.',
+    fireAt: new Date('2026-05-17T15:00:00-07:00'),
+  },
+  {
+    category: 'announcements',
+    title: 'Steering Council Panel in 15 min',
+    body: 'Python Steering Council Panel — Pacific Ballroom (Arena). Starts 4:00 PM.',
+    fireAt: new Date('2026-05-17T15:45:00-07:00'),
   },
 ];
 

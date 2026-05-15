@@ -57,7 +57,8 @@
     <ion-textarea
       [(ngModel)]="freeformNote"
       placeholder="Additional notes..."
-      maxlength="2000"
+      [maxlength]="maxNoteLength"
+      [counter]="true"
       [autoGrow]="true"
       rows="3"
       inputmode="text"
