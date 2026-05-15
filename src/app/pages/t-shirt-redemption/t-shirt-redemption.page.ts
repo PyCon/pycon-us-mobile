@@ -1,5 +1,5 @@
 import { Component, ElementRef, ChangeDetectorRef, Inject, ViewChild, OnInit, OnDestroy } from '@angular/core';
-import { Config, Platform } from '@ionic/angular';
+import { Config, Platform, ToastController } from '@ionic/angular';
 import { BarcodeScanner, BarcodeFormat, LensFacing, ScanResult } from '@capacitor-mlkit/barcode-scanning';
 import { Storage } from '@ionic/storage-angular';
 import { ModalController } from '@ionic/angular';
@@ -44,7 +44,18 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
     private storage: Storage,
     public detectorRef: ChangeDetectorRef,
     public modalCtrl: ModalController,
+    private toastCtrl: ToastController,
   ) { }
+
+  private async showToast(message: string, color: 'success' | 'danger' | 'warning', duration = 3000) {
+    const toast = await this.toastCtrl.create({
+      message,
+      color,
+      duration,
+      position: 'top',
+    });
+    await toast.present();
+  }
 
   getCategoryName(categoryId: number) {
     return this.redeemable_categories.find(x => x.id === categoryId)?.name
@@ -119,17 +130,62 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
 
     this.ignore_scans = false;
     if (role === 'save' && data) {
-      var payload = {attendee_access_code: data.accessCode}
-      for (const [key, value] of Object.entries(data.toRedeem)) {
-        payload["product-redeem-" + key] = key
-        payload["product-" + key + "-quantity"] = value
+      const toRedeemEntries = Object.entries(data.toRedeem ?? {});
+      if (toRedeemEntries.length === 0) {
+        // Operator confirmed with nothing checked — bail out before
+        // POSTing an empty redemption (which the backend silently accepts
+        // as a no-op, leaving the operator wondering why nothing happened).
+        await this.showToast('No items selected — nothing to redeem.', 'warning');
+        if (this.scanning) await this.addListeners();
+        return;
+      }
+      const payload: any = {attendee_access_code: data.accessCode};
+      for (const [key, value] of toRedeemEntries) {
+        payload['product-redeem-' + key] = key;
+        payload['product-' + key + '-quantity'] = value;
       }
       console.log(payload);
-      await this.pycon.redeemProducts(payload).then((data) => {
-        data.subscribe(redemptionData => {
-          console.log(redemptionData);
-        })
-      })
+      try {
+        const observable = await this.pycon.redeemProducts(payload);
+        observable.subscribe(
+          (redemptionData: any) => {
+            console.log(redemptionData);
+            const errors: any[] = redemptionData?.errors ?? [];
+            const redeemed: any = redemptionData?.redeemable_products_by_category ?? {};
+            const redeemedCount = Object.values(redeemed).reduce(
+              (n: number, items: any) => n + (Array.isArray(items) ? items.length : 0),
+              0,
+            );
+            if (errors.length > 0) {
+              const msg = errors.map((e) => e.message).filter(Boolean).join('; ') || 'Some items could not be redeemed.';
+              this.showToast(`Partial redemption: ${msg}`, 'warning', 5000);
+            } else if (redeemedCount > 0) {
+              this.showToast(`Redeemed ${redeemedCount} item${redeemedCount === 1 ? '' : 's'}.`, 'success');
+            } else {
+              // Backend returned 200 but nothing actually redeemed — most
+              // commonly an already-redeemed line item. Surface it so the
+              // operator doesn't think the button is broken.
+              this.showToast('Nothing was redeemed. Items may already be picked up.', 'warning');
+            }
+            if (this.scanning) this.addListeners();
+          },
+          (error: any) => {
+            // Without this branch a network/5xx error vanished into the
+            // RxJS unhandled-error log and the operator saw nothing
+            // happen at all.
+            console.warn('Redemption failed', error);
+            this.showToast('Redemption failed — check WiFi and try again.', 'danger', 5000);
+            if (this.scanning) this.addListeners();
+          },
+        );
+      } catch (err) {
+        console.warn('redeemProducts threw before subscribe', err);
+        this.showToast('Redemption failed — check WiFi and try again.', 'danger', 5000);
+        if (this.scanning) this.addListeners();
+      }
+    } else {
+      // Modal was cancelled — resume scanning so the operator can move on.
+      if (this.scanning) await this.addListeners();
     }
   }
 
