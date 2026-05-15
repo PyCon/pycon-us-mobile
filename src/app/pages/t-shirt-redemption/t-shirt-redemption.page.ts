@@ -162,8 +162,8 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
             console.log(redemptionData);
             const errors: any[] = redemptionData?.errors ?? [];
             const redeemed: any = redemptionData?.redeemable_products_by_category ?? {};
-            const redeemedCount = Object.values(redeemed).reduce(
-              (n: number, items: any) => n + (Array.isArray(items) ? items.length : 0),
+            const redeemedCount: number = Object.values(redeemed).reduce<number>(
+              (n, items: any) => n + (Array.isArray(items) ? items.length : 0),
               0,
             );
             if (errors.length > 0) {
