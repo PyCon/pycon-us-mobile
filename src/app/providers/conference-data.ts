@@ -423,6 +423,9 @@ export class ConferenceData {
           sessionLocation = roomMatch[1];
           slot.name = slot.name.replace(roomMatch[0], '').trim();
         }
+        if (slot.kind === 'lightning-talks') {
+          displayLocationOverride = 'Pacific Ballroom - Arena';
+        }
         // Normalize bare "Hall AB"/"Hall C" to canonical "Expo Hall …" so
         // plenaries that name the venue as "Hall AB" (Opening Reception,
         // Posters, etc.) land in the same room bucket as sponsor booths /
