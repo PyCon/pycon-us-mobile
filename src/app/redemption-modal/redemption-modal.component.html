@@ -37,7 +37,9 @@
       </div>
       <ion-row>
         <ion-col>
-          <ion-button [disabled]="!canRedeem" (click)="confirm()">Redeem now</ion-button>
+          <ion-button [disabled]="!canRedeem || submitting" (click)="confirm()">
+            {{ submitting ? 'Redeeming…' : 'Redeem now' }}
+          </ion-button>
         </ion-col>
       </ion-row>
     </ion-grid>

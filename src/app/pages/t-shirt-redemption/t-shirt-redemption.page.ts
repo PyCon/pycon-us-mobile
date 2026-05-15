@@ -210,8 +210,12 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
   }
 
   addListeners = async () => {
-    console.log(this.scanError);
-    const listener = await BarcodeScanner.addListener(
+    // Drop any prior listener before subscribing — handleScan() is invoked
+    // from a 250ms timer AND again after the redemption modal dismisses, so
+    // without this each scan ends up wired twice and every barcode fires
+    // handleScan twice (= double POST = potential duplicate redemption).
+    await BarcodeScanner.removeAllListeners();
+    await BarcodeScanner.addListener(
       'barcodesScanned',
       async result => {
         this.handleScan(result)

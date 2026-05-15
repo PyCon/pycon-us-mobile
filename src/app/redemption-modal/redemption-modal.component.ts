@@ -16,6 +16,7 @@ export class RedemptionModalComponent {
   @Input() redeemableProductsByCategory: any;
 
   canRedeem: boolean = false;
+  submitting: boolean = false;
   toRedeem: any = {};
 
   constructor(
@@ -38,6 +39,11 @@ export class RedemptionModalComponent {
   }
 
   confirm() {
+    // Latch immediately so a second tap during the dismiss animation can't
+    // re-fire and submit a duplicate redemption.
+    if (this.submitting) return;
+    this.submitting = true;
+    this.detectorRef.detectChanges();
     console.log(this.toRedeem)
     this.modalCtrl.dismiss({accessCode: this.accessCode, toRedeem: this.toRedeem}, 'save');
   }
