@@ -1,47 +1,73 @@
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button color="medium" (click)="cancel()">Cancel</ion-button>
-    </ion-buttons>
     <ion-title>Redeem Products</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-  <ion-item lines="none">
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>{{attendeeName}}</ion-card-title>
-        <ion-card-subtitle>Redeeming for</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-text *ngIf="!hasItemsToRedeem">No items to redeem</ion-text>
-        <ion-text *ngIf="hasItemsToRedeem">
-        Redeemable products are listed below, select the ones you'll be handing the attendee,
-        then press "Redeem" to mark them as provided.
-        </ion-text>
-      </ion-card-content>
-    </ion-card>
-  </ion-item>
-  <ion-item *ngIf="hasItemsToRedeem" lines="none">
-    <ion-grid>
-      <div *ngFor="let category of redeemableProductsByCategory | keyvalue">
-        <ion-row><ion-col><h2>{{category.key}}</h2></ion-col></ion-row>
-        <ion-row *ngFor="let product of category.value">
-          <ion-col>
-            <ion-item>
-              <ion-checkbox [disabled]="product.redeemable === 0" (ionChange)="checkProduct($event, product.product_id, product.redeemable)" slot="start"></ion-checkbox>
-              <ion-label><b>{{product.redeemable}}x</b> {{product.product_name}}<div *ngIf="product.redeemable !== product.purchased"><br>({{product.purchased - product.redeemable}} already redeemed)</div></ion-label>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-      </div>
+
+<ion-content class="ion-padding">
+  <ion-card class="attendee-card">
+    <ion-card-header>
+      <ion-card-subtitle>Redeeming for</ion-card-subtitle>
+      <ion-card-title>{{attendeeName}}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-text *ngIf="!hasItemsToRedeem">No items to redeem.</ion-text>
+      <ion-text *ngIf="hasItemsToRedeem">
+        Select the items you're handing the attendee, then tap <strong>Redeem now</strong>.
+      </ion-text>
+    </ion-card-content>
+  </ion-card>
+
+  <div *ngIf="hasItemsToRedeem" class="redeem-list">
+    <div *ngFor="let category of redeemableProductsByCategory | keyvalue" class="redeem-category">
+      <h2 class="category-title">{{category.key}}</h2>
+      <ion-list lines="full">
+        <ion-item *ngFor="let product of category.value" [disabled]="product.redeemable === 0">
+          <ion-checkbox
+            [disabled]="product.redeemable === 0"
+            (ionChange)="checkProduct($event, product.product_id, product.redeemable)"
+            slot="start"
+            labelPlacement="end"
+            justify="start">
+            <ion-label class="product-label">
+              <strong>{{product.redeemable}}x</strong> {{product.product_name}}
+              <div *ngIf="product.redeemable !== product.purchased" class="already-redeemed">
+                {{product.purchased - product.redeemable}} already redeemed
+              </div>
+            </ion-label>
+          </ion-checkbox>
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <ion-grid class="footer-grid">
       <ion-row>
-        <ion-col>
-          <ion-button [disabled]="!canRedeem || submitting" (click)="confirm()">
+        <ion-col size="5">
+          <ion-button
+            expand="block"
+            size="large"
+            color="medium"
+            fill="outline"
+            [disabled]="submitting"
+            (click)="cancel()">
+            Cancel
+          </ion-button>
+        </ion-col>
+        <ion-col size="7">
+          <ion-button
+            expand="block"
+            size="large"
+            color="primary"
+            [disabled]="!canRedeem || submitting"
+            (click)="confirm()">
             {{ submitting ? 'Redeeming…' : 'Redeem now' }}
           </ion-button>
         </ion-col>
       </ion-row>
     </ion-grid>
-  </ion-item>
-</ion-content>
+  </ion-toolbar>
+</ion-footer>

@@ -24,6 +24,11 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
   scanError: boolean = false;
   scan_timeout: ReturnType<typeof setTimeout> = null;
   ignore_scans: boolean = false;
+  // Hard lock around the whole "scan -> fetch -> modal -> redeem -> resume"
+  // pipeline. Belt-and-suspenders against duplicate scanner listeners
+  // firing handleScan twice for a single barcode (previously caused
+  // duplicate DoorCheck rows in prod).
+  processing_scan: boolean = false;
 
   ios: boolean;
   show_permissions_error: boolean = false;
@@ -136,6 +141,7 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
         // POSTing an empty redemption (which the backend silently accepts
         // as a no-op, leaving the operator wondering why nothing happened).
         await this.showToast('No items selected — nothing to redeem.', 'warning');
+        this.processing_scan = false;
         if (this.scanning) await this.addListeners();
         return;
       }
@@ -177,6 +183,7 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
               // operator doesn't think the button is broken.
               this.showToast('Nothing was redeemed. Items may already be picked up.', 'warning');
             }
+            this.processing_scan = false;
             if (this.scanning) this.addListeners();
           },
           (error: any) => {
@@ -185,16 +192,19 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
             // happen at all.
             console.warn('Redemption failed', error);
             this.showToast('Redemption failed — check WiFi and try again.', 'danger', 5000);
+            this.processing_scan = false;
             if (this.scanning) this.addListeners();
           },
         );
       } catch (err) {
         console.warn('redeemProducts threw before subscribe', err);
         this.showToast('Redemption failed — check WiFi and try again.', 'danger', 5000);
+        this.processing_scan = false;
         if (this.scanning) this.addListeners();
       }
     } else {
       // Modal was cancelled — resume scanning so the operator can move on.
+      this.processing_scan = false;
       if (this.scanning) await this.addListeners();
     }
   }
@@ -228,7 +238,11 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
   }
 
   handleScan = async (result: any) => {  // Should be type ScanResult or BarcodeScannedEvent???
-    if (result.barcodes && !this.ignore_scans) {
+    if (!result.barcodes || this.ignore_scans || this.processing_scan) return;
+    // Take the lock SYNCHRONOUSLY before any awaits so a duplicate listener
+    // firing the same tick can't slip past the guard.
+    this.processing_scan = true;
+    try {
       await this.removeListeners();
       clearTimeout(this.last_scan_timeout);
       // Capture rawValue + scan timestamp now so the redemption POST can
@@ -237,25 +251,31 @@ export class TShirtRedemptionPage implements OnInit, OnDestroy {
       // empty DateTimeField and the redemption silently fails.
       const rawValue = result.barcodes[0].rawValue as string;
       const scannedAt = new Date().toISOString();
-      await this.pycon.fetchAttendeeProducts(
-        rawValue.split(':')[0], this.category, this.mode
-      ).then((data) => {
-        data.subscribe(
-          redemptionData => {
-            if (redemptionData) {
-              console.log(redemptionData);
-              this.openRedemptionModal(redemptionData, rawValue, scannedAt)
-            }
-          },
-          error => {
-            this.scanError = true;
-            this.detectorRef.detectChanges();
-          }
-        )
-      }
-      ).then(
-        () => {setTimeout(this.addListeners, 250); setTimeout(this.clearError, 1000);}
+      const observable = await this.pycon.fetchAttendeeProducts(
+        rawValue.split(':')[0], this.category, this.mode,
       );
+      observable.subscribe(
+        (redemptionData) => {
+          if (redemptionData) {
+            console.log(redemptionData);
+            this.openRedemptionModal(redemptionData, rawValue, scannedAt);
+          } else {
+            this.processing_scan = false;
+            if (this.scanning) this.addListeners();
+          }
+        },
+        () => {
+          this.scanError = true;
+          this.detectorRef.detectChanges();
+          this.processing_scan = false;
+          if (this.scanning) this.addListeners();
+        },
+      );
+      setTimeout(this.clearError, 1000);
+    } catch (err) {
+      console.warn('handleScan failed', err);
+      this.processing_scan = false;
+      if (this.scanning) this.addListeners();
     }
   }
 

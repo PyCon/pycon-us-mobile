@@ -38,13 +38,25 @@ export class RedemptionModalComponent {
     return this.modalCtrl.dismiss({}, 'cancel');
   }
 
-  confirm() {
+  async confirm() {
     // Latch immediately so a second tap during the dismiss animation can't
     // re-fire and submit a duplicate redemption.
     if (this.submitting) return;
     this.submitting = true;
     this.detectorRef.detectChanges();
-    console.log(this.toRedeem)
-    this.modalCtrl.dismiss({accessCode: this.accessCode, toRedeem: this.toRedeem}, 'save');
+    console.log(this.toRedeem);
+    try {
+      await this.modalCtrl.dismiss(
+        {accessCode: this.accessCode, toRedeem: this.toRedeem},
+        'save',
+      );
+    } catch (err) {
+      // If dismiss somehow fails (already-dismissed, controller race),
+      // un-latch so the operator isn't trapped with a permanently
+      // "Redeeming…" button.
+      console.warn('redemption-modal dismiss failed, resetting', err);
+      this.submitting = false;
+      this.detectorRef.detectChanges();
+    }
   }
 }

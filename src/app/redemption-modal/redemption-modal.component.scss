@@ -1,0 +1,34 @@
+.attendee-card {
+  margin: 0 0 16px 0;
+}
+
+.redeem-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.category-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 8px 4px;
+}
+
+.product-label {
+  white-space: normal;
+
+  strong {
+    font-weight: 700;
+    margin-right: 4px;
+  }
+}
+
+.already-redeemed {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+
+.footer-grid {
+  padding: 0 8px;
+}
