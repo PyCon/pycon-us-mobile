@@ -119,14 +119,20 @@ export class SchedulePage implements OnInit, OnDestroy {
 
   scrollToCurrentTime() {
     setTimeout(() => {
-      const futureEl = document.querySelector('.future') as HTMLElement;
-      if (futureEl && this.content) {
-        const rect = futureEl.getBoundingClientRect();
-        this.content.getScrollElement().then((scrollEl) => {
-          const scrollTop = scrollEl.scrollTop + rect.top - 100;
-          this.content.scrollToPoint(0, scrollTop, 500);
-        });
-      }
+      if (!this.content || !this.groups || this.groups.length === 0) return;
+      const now = this.currentTime ? this.currentTime.getTime() : Date.now();
+      let targetIndex = this.groups.findIndex(
+        (g: any) => g.startTime && new Date(g.startTime).getTime() >= now
+      );
+      if (targetIndex === -1) targetIndex = this.groups.length - 1;
+      const dividers = document.querySelectorAll('ion-item-divider');
+      const targetEl = dividers[targetIndex] as HTMLElement;
+      if (!targetEl) return;
+      const rect = targetEl.getBoundingClientRect();
+      this.content.getScrollElement().then((scrollEl) => {
+        const scrollTop = scrollEl.scrollTop + rect.top - 100;
+        this.content.scrollToPoint(0, scrollTop, 500);
+      });
     }, 500);
   }
 
