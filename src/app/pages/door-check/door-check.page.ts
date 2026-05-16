@@ -210,11 +210,26 @@ export class DoorCheckPage implements OnInit, OnDestroy {
 
   async displayLastScan(accessCode: string, access: boolean, quantity: number, productQuantities: Map<string, number>, scannedCode: string) {
     // A `synced-door-check-<code>` storage key is left behind by a previously
-    // completed scan + sync on this device, so its presence means this is at
-    // least the second time we're seeing this badge. Show the orange
-    // "Already checked in" state instead of green "Checked in" — useful for
-    // staff to catch buddy-pass / re-entry attempts.
-    const alreadySynced = !!(await this.storage.get('synced-door-check-' + accessCode));
+    // completed scan + sync on this device. It's keyed by access code ONLY,
+    // not by product — so checking its mere presence falsely flagged any
+    // attendee who'd been checked in for a different session earlier as
+    // "Already checked in" the moment they scanned for the current one
+    // (Maintainers Summit case). Look INSIDE the synced record for the
+    // products that were actually redeemed last time and only call it
+    // "already" if any of the products we're currently scanning for
+    // overlap.
+    const syncedRaw: any = await this.storage.get('synced-door-check-' + accessCode);
+    let alreadySynced = false;
+    if (syncedRaw?.redeemable_products_by_category && this.scanningProducts?.length) {
+      const syncedProductIds = new Set<number>();
+      Object.values(syncedRaw.redeemable_products_by_category as Record<string, any[]>).forEach((items) => {
+        if (!Array.isArray(items)) return;
+        items.forEach((item: any) => {
+          if (item?.product_id != null) syncedProductIds.add(Number(item.product_id));
+        });
+      });
+      alreadySynced = this.scanningProducts.some((p: any) => syncedProductIds.has(Number(p)));
+    }
     if (access && quantity > 0) {
       this.storeScan(accessCode, access, productQuantities, scannedCode);
     }
