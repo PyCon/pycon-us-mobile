@@ -287,6 +287,14 @@ export class ConferenceData {
     // open-space room/timeslot. They have no title, no track, null location,
     // and shouldn't appear on the schedule.
     //
+    // ALSO drop kind="open-space" entries. These are *booked* open spaces
+    // that the backend emits into BOTH data.schedule AND data["open-spaces"]
+    // (e.g. "5K Fun Run", "NVIDIA AI Open Space"). The dedicated
+    // open-spaces loop above already creates a session for each entry in
+    // data["open-spaces"] and slots it into the timeline. Leaving them in
+    // data.schedule produces a second identical session on the day view.
+    // PYMOBIL-bug observed Sat 5/16 morning.
+    //
     // And drop empty/cancelled session stubs — when a talk is cancelled the
     // pretalx feed leaves the timeslot in place with name === kind ("talk",
     // "charla", …), no description, no speakers. The web schedule hides
@@ -295,6 +303,7 @@ export class ConferenceData {
       if (typeof slot.kind === 'string' && slot.kind.startsWith('available-open-space')) {
         return false;
       }
+      if (slot.kind === 'open-space') return false;
       if (this.isPlaceholderSlot(slot)) return false;
       if (slot.kind !== 'plenary') return true;
       const cleanName = markdownToTxt(slot.name).replace(/\s*\([^)]*\)\s*$/, '').trim();
