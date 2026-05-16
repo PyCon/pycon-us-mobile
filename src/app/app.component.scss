@@ -72,18 +72,6 @@
   }
 }
 
-// Dev-only tint so it's obvious in `npx ionic serve` that the banner
-// is being force-shown for layout preview, not because a real Appflow
-// update was detected.
-.update-banner-dev {
-  background: linear-gradient(135deg, #c2410c, #9a3412);
-
-  .update-banner-cta::after {
-    content: " (dev preview)";
-    opacity: 0.85;
-  }
-}
-
 @keyframes update-banner-pulse {
   0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18); }
   50%      { box-shadow: 0 2px 14px rgba(82, 148, 226, 0.55); }

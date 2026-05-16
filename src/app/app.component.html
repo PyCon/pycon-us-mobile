@@ -3,19 +3,15 @@
   [class.high-contrast-theme]="theme === 'high-contrast-light' || theme === 'high-contrast-dark'"
   [class.high-contrast-light-theme]="theme === 'high-contrast-light'"
   [class.high-contrast-dark-theme]="theme === 'high-contrast-dark'"
-  [class.has-update-banner]="liveUpdateService.needsUpdate || isDev">
+  [class.has-update-banner]="liveUpdateService.needsUpdate">
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <!-- Global "new version available" banner. Persists across every page and
-       tab because it sits as a sibling of ion-split-pane inside ion-app.
-       In dev (`isDev`) the banner force-shows so the layout can be
-       previewed without a real Live Update sync — strip the `|| isDev`
-       half before shipping if dev should look identical to prod. -->
+       tab because it sits as a sibling of ion-split-pane inside ion-app. -->
   <button
-    *ngIf="liveUpdateService.needsUpdate || isDev"
+    *ngIf="liveUpdateService.needsUpdate"
     type="button"
     class="update-banner"
-    [class.update-banner-dev]="!liveUpdateService.needsUpdate && isDev"
     (click)="liveUpdateService.performAutomaticUpdate()">
     <ion-icon class="update-banner-icon" name="cloud-download-outline" aria-hidden="true"></ion-icon>
     <span class="update-banner-text">
