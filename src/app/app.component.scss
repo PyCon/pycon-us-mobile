@@ -1,4 +1,101 @@
 /*
+ * Global "new version available" banner. Lives directly inside ion-app
+ * as a sibling of ion-split-pane so it persists across every route and
+ * tab. ion-app is a flex column, so the banner naturally takes the top
+ * row and the split-pane fills the remainder — no fixed-positioning
+ * games, no z-index wrestling with page headers, no per-page padding
+ * compensation. Tapping anywhere on the banner kicks off
+ * performAutomaticUpdate() (loader spinner + reload).
+ */
+.update-banner {
+  // Reset <button> defaults so it looks like the rest of the app
+  appearance: none;
+  border: 0;
+  margin: 0;
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  // Respect the iPhone notch / Dynamic Island
+  padding-top: calc(10px + env(safe-area-inset-top));
+
+  background: linear-gradient(135deg, var(--ion-color-primary, #5294e2), var(--ion-color-primary-shade, #3b73c4));
+  color: var(--ion-color-primary-contrast, #fff);
+  font-size: 0.95rem;
+  line-height: 1.2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  // Above everything in the webview so it can't be eclipsed by stray
+  // overlays — but inside the document flow so it pushes ion-content
+  // down rather than covering the header.
+  position: relative;
+  z-index: 1000;
+
+  // Gentle pulse so it stays in the operator's peripheral vision
+  // without being annoying. Disabled for reduced-motion users.
+  animation: update-banner-pulse 2.4s ease-in-out infinite;
+
+  &:active {
+    filter: brightness(0.92);
+  }
+
+  .update-banner-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .update-banner-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      font-weight: 700;
+    }
+  }
+
+  .update-banner-cta {
+    font-size: 0.8rem;
+    opacity: 0.92;
+    letter-spacing: 0.02em;
+  }
+
+  .update-banner-chevron {
+    font-size: 1.2rem;
+    opacity: 0.85;
+    flex-shrink: 0;
+  }
+}
+
+// Dev-only tint so it's obvious in `npx ionic serve` that the banner
+// is being force-shown for layout preview, not because a real Appflow
+// update was detected.
+.update-banner-dev {
+  background: linear-gradient(135deg, #c2410c, #9a3412);
+
+  .update-banner-cta::after {
+    content: " (dev preview)";
+    opacity: 0.85;
+  }
+}
+
+@keyframes update-banner-pulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18); }
+  50%      { box-shadow: 0 2px 14px rgba(82, 148, 226, 0.55); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .update-banner {
+    animation: none;
+  }
+}
+
+/*
  * Skip-to-content link for keyboard and screen-reader users. Hidden off-canvas
  * until focused, then anchors to top-left as the first interactive control on
  * every page. Targets the router outlet's id so focus actually transfers.

@@ -2,8 +2,29 @@
   [class.dark-theme]="theme === 'dark'"
   [class.high-contrast-theme]="theme === 'high-contrast-light' || theme === 'high-contrast-dark'"
   [class.high-contrast-light-theme]="theme === 'high-contrast-light'"
-  [class.high-contrast-dark-theme]="theme === 'high-contrast-dark'">
+  [class.high-contrast-dark-theme]="theme === 'high-contrast-dark'"
+  [class.has-update-banner]="liveUpdateService.needsUpdate || isDev">
   <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Global "new version available" banner. Persists across every page and
+       tab because it sits as a sibling of ion-split-pane inside ion-app.
+       In dev (`isDev`) the banner force-shows so the layout can be
+       previewed without a real Live Update sync — strip the `|| isDev`
+       half before shipping if dev should look identical to prod. -->
+  <button
+    *ngIf="liveUpdateService.needsUpdate || isDev"
+    type="button"
+    class="update-banner"
+    [class.update-banner-dev]="!liveUpdateService.needsUpdate && isDev"
+    (click)="liveUpdateService.performAutomaticUpdate()">
+    <ion-icon class="update-banner-icon" name="cloud-download-outline" aria-hidden="true"></ion-icon>
+    <span class="update-banner-text">
+      <strong>New version available</strong>
+      <span class="update-banner-cta">Tap to update</span>
+    </span>
+    <ion-icon class="update-banner-chevron" name="chevron-forward" aria-hidden="true"></ion-icon>
+  </button>
+
   <ion-split-pane contentId="main-content">
 
     <ion-menu contentId="main-content">
