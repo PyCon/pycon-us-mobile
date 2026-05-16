@@ -50,7 +50,7 @@
             </div>
             <p class="session-meta">
               <span class="meta-item"><ion-icon name="time-outline"></ion-icon> {{session.timeStart}} – {{session.timeEnd}}</span>
-              <span *ngIf="session.displayLocation || session.location" class="meta-item"><ion-icon name="location-outline"></ion-icon> {{session.displayLocation || session.location}}</span>
+              <span *ngIf="session.displayLocation" class="meta-item"><ion-icon name="location-outline"></ion-icon> {{session.displayLocation}}</span>
             </p>
             <div *ngIf="session.speakers?.length" class="speaker-avatars">
               <ion-avatar *ngFor="let speaker of session.speakers" class="speaker-avatar-small">

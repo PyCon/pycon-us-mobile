@@ -785,6 +785,18 @@ export class ConferenceData {
       // every audience room).
       session.displayLocation = session.displayLocationOverride
         || (links.length > 0 ? links[0].name : (session.location || ''));
+      // Generic "Break" rows (slot.name === "Break" — the API fans them
+      // out across every audience room with no specific service venue)
+      // have no single meaningful location to surface in the timeline:
+      // showing "Room 103ABC" picks an arbitrary first-of-many room and
+      // misleads attendees. Coffee and Lunch keep their venue because
+      // the API encodes "(Hall AB)" / "(Outside Hall AB)" in the slot
+      // name, which collapsedGroups extracts into a real room earlier.
+      // session.location is intentionally left intact so the per-room
+      // agenda still lists the break in each audience room.
+      if (session.track === 'Break' && session.name === 'Break') {
+        session.displayLocation = '';
+      }
     });
     // Seed empty entries for sprint-only rooms. Sprints aren't in
     // data.sessions (the API ships them as a separate `sprints` array, not

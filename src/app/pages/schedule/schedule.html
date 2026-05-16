@@ -77,7 +77,7 @@
           </h3>
           <p class="notice-meta">
             <span class="meta-item"><ion-icon name="time-outline"></ion-icon> {{session.timeStart}}<span *ngIf="session.timeStart !== session.timeEnd"> – {{session.timeEnd}}</span></span>
-            <span *ngIf="session.displayLocation || session.location" class="meta-item"><ion-icon name="location-outline"></ion-icon> {{session.displayLocation || session.location}}</span>
+            <span *ngIf="session.displayLocation" class="meta-item"><ion-icon name="location-outline"></ion-icon> {{session.displayLocation}}</span>
           </p>
         </a>
 
@@ -94,7 +94,7 @@
               <span *ngIf="session.preRegistered" class="track-badge prereg-badge">Pre-registration required</span>
               <p class="session-meta">
                 <span class="meta-item"><ion-icon name="time-outline"></ion-icon> {{session.timeStart}}<span *ngIf="session.timeStart !== session.timeEnd"> – {{session.timeEnd}}</span></span>
-                <span *ngIf="session.displayLocation || session.location" class="meta-item"><ion-icon name="location-outline"></ion-icon> {{session.displayLocation || session.location}}</span>
+                <span *ngIf="session.displayLocation" class="meta-item"><ion-icon name="location-outline"></ion-icon> {{session.displayLocation}}</span>
               </p>
               <p *ngIf="session?.speakerNames?.length" class="session-speakers">
                 <ion-icon name="person-outline"></ion-icon> {{session.speakerNames.join(', ')}}
