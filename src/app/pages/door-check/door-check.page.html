@@ -63,6 +63,10 @@
       <span class="kicker">Scanning for</span>
       <span class="primary">{{ getProductName(product) || 'All sessions' }}</span>
       <span *ngIf="product !== 'all'" class="secondary">{{ getCategoryName(category) }}</span>
+      <span class="check-in-count" *ngIf="check_in_count > 0">
+        <ion-icon name="people-outline" aria-hidden="true"></ion-icon>
+        {{ check_in_count }} checked in
+      </span>
     </ion-card-content>
   </ion-card>
 
@@ -86,6 +90,10 @@
           <strong *ngIf="last_scan.status && last_scan.already">Already checked in</strong>
           <strong *ngIf="!last_scan.status">Entry not permitted</strong>
           <code>{{ last_scan.code }}</code>
+        </div>
+        <div *ngIf="last_scan.count > 0" class="last-scan-count" aria-label="Total checked in for this session">
+          <ion-icon name="people-outline" aria-hidden="true"></ion-icon>
+          <span>{{ last_scan.count }}</span>
         </div>
       </div>
     </ion-card-content>

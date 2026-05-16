@@ -109,6 +109,8 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
+    min-width: 0;
 
     strong {
       font-size: 1rem;
@@ -118,5 +120,46 @@
       font-size: 0.75rem;
       opacity: 0.85;
     }
+  }
+
+  // Running headcount badge on the right side of the last-scan card.
+  // Big & high-contrast so door staff can read it at arm's length while
+  // moving attendees through the queue.
+  .last-scan-count {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.22);
+    color: inherit;
+    font-weight: 700;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+
+    ion-icon {
+      font-size: 18px;
+    }
+  }
+}
+
+// Static "X checked in" line in the Scanning-for card so the operator
+// can see the running total between scans (without waiting for the
+// last-scan toast to render).
+.scanning-for-card .check-in-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--ion-color-primary, #5294e2);
+  color: var(--ion-color-primary-contrast, #fff);
+  font-weight: 600;
+  font-size: 0.9rem;
+  align-self: flex-start;
+
+  ion-icon {
+    font-size: 16px;
   }
 }

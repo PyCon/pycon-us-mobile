@@ -15,6 +15,12 @@ export class DoorCheckPage implements OnInit, OnDestroy {
   scanning: boolean = false;
   scan_presentation = [];
   dirty: boolean = false;
+  // Running tally of successful, NOT-already-checked-in scans for the
+  // current product. Resets when the operator picks a different product /
+  // category, or restarts the scanner. Surfaced on the last-scan popup so
+  // door staff can sanity-check headcount against badge stickers / clicker
+  // counts without leaving the app.
+  check_in_count: number = 0;
 
   last_scan: any = null;
   last_scan_timeout: ReturnType<typeof setTimeout> = null;
@@ -103,10 +109,12 @@ export class DoorCheckPage implements OnInit, OnDestroy {
       this.filtered_products = null;
       this.product = null;
       this.productSearch = '';
+      this.check_in_count = 0;
       this.detectorRef.detectChanges();
       return;
     }
     this.category = categoryId;
+    this.check_in_count = 0;
     this.refreshProducts();
   }
 
@@ -120,6 +128,9 @@ export class DoorCheckPage implements OnInit, OnDestroy {
   }
 
   selectProduct(productId: any) {
+    if (this.product !== productId) {
+      this.check_in_count = 0;
+    }
     this.product = productId;
     this.detectorRef.detectChanges();
   }
@@ -207,10 +218,14 @@ export class DoorCheckPage implements OnInit, OnDestroy {
     if (access && quantity > 0) {
       this.storeScan(accessCode, access, productQuantities, scannedCode);
     }
+    if (access && quantity > 0 && !alreadySynced) {
+      this.check_in_count += 1;
+    }
     this.last_scan = {
       "status": access ? quantity : quantity,
       "code": accessCode,
       "already": access && alreadySynced,
+      "count": this.check_in_count,
     };
     this.detectorRef.detectChanges();
     this.last_scan_timeout = setTimeout(this.clearLastScan, 5000);
