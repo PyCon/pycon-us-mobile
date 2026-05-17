@@ -43,6 +43,13 @@ export class DoorCheckPage implements OnInit, OnDestroy {
 
   product_attendees: Map<string, number>|null = null;
   inventory: Map<string, Map<number, number>>|null = null;
+  // Catering-relevant attendee fields, keyed by access code. Loaded
+  // alongside the inventory bulk fetch so the door-check popup can
+  // surface kosher / vegan / gluten-free / allergy info instantly when
+  // an attendee badge scans (no extra network call). Backend builds this
+  // in _dietary_payload_for_attendee — only attendees with non-default
+  // dietary or any allergy appear here, so the map stays small.
+  dietary: Map<string, {name?: string; dietary?: string; has_allergy?: boolean; allergy?: string}> = new Map();
 
   constructor(
     public platform: Platform,
@@ -236,11 +243,16 @@ export class DoorCheckPage implements OnInit, OnDestroy {
     if (access && quantity > 0 && !alreadySynced) {
       this.check_in_count += 1;
     }
+    const diet = this.dietary.get(accessCode);
     this.last_scan = {
       "status": access ? quantity : quantity,
       "code": accessCode,
       "already": access && alreadySynced,
       "count": this.check_in_count,
+      "name": diet?.name || '',
+      "dietary": diet?.dietary || '',
+      "has_allergy": !!diet?.has_allergy,
+      "allergy": diet?.allergy || '',
     };
     this.detectorRef.detectChanges();
     this.last_scan_timeout = setTimeout(this.clearLastScan, 5000);
@@ -276,6 +288,20 @@ export class DoorCheckPage implements OnInit, OnDestroy {
                   productQuantities.set(product.product_id, product.redeemable);
                 })
               }
+            }
+            // Backend attaches dietary/allergy to the fetch_products
+            // response when the attendee profile has anything meaningful
+            // (non-default diet or allergy flag). Cache it under the
+            // access code so displayLastScan can render the chip from
+            // the same shared `dietary` map the bulk inventory load uses.
+            const hasDietary = (attendeeDataAny?.dietary && attendeeDataAny.dietary !== '') || attendeeDataAny?.has_allergy;
+            if (hasDietary || attendeeDataAny?.attendee_name) {
+              this.dietary.set(accessCode, {
+                name: attendeeDataAny?.attendee_name || '',
+                dietary: attendeeDataAny?.dietary || '',
+                has_allergy: !!attendeeDataAny?.has_allergy,
+                allergy: attendeeDataAny?.allergy || '',
+              });
             }
             this.displayLastScan(accessCode, access, quantity, productQuantities, scannedCode);
           },
@@ -338,6 +364,7 @@ export class DoorCheckPage implements OnInit, OnDestroy {
 
     this.product_attendees = new Map();
     this.inventory = new Map();
+    this.dietary = new Map();
 
     this.scanningProducts.forEach((productId) => {
       this.pycon.fetchAttendeesByProductWithQuantity(productId).then((data) => {
@@ -358,6 +385,25 @@ export class DoorCheckPage implements OnInit, OnDestroy {
             } else {
               this.inventory.set(attendee.id, new Map());
               this.inventory.get(attendee.id).set(productId, attendee.quantity);
+            }
+
+            // Backend only attaches dietary/allergy when it's actually
+            // meaningful (non-default diet OR any allergy), so the
+            // presence of `attendee.dietary` or `attendee.has_allergy`
+            // is the signal to surface a chip. Stays sticky across
+            // multiple products: if one product's row had dietary info
+            // and the same attendee turns up via a second product
+            // without dietary attached, we don't blow away the existing
+            // entry.
+            const hasDietary = (attendee.dietary && attendee.dietary !== '') || attendee.has_allergy;
+            if (hasDietary || attendee.name) {
+              const prev = this.dietary.get(attendee.id) || {};
+              this.dietary.set(attendee.id, {
+                name: attendee.name || prev.name,
+                dietary: attendee.dietary || prev.dietary || '',
+                has_allergy: !!(attendee.has_allergy ?? prev.has_allergy),
+                allergy: attendee.allergy || prev.allergy || '',
+              });
             }
           });
         })

@@ -90,6 +90,16 @@
           <strong *ngIf="last_scan.status && last_scan.already">Already checked in</strong>
           <strong *ngIf="!last_scan.status">Entry not permitted</strong>
           <code>{{ last_scan.code }}</code>
+          <div *ngIf="last_scan.dietary || last_scan.has_allergy" class="last-scan-dietary">
+            <span *ngIf="last_scan.dietary" class="dietary-chip">
+              <ion-icon name="restaurant-outline" aria-hidden="true"></ion-icon>
+              {{ last_scan.dietary | titlecase }}
+            </span>
+            <span *ngIf="last_scan.has_allergy" class="dietary-chip dietary-allergy">
+              <ion-icon name="warning-outline" aria-hidden="true"></ion-icon>
+              Allergy{{ last_scan.allergy ? ': ' + last_scan.allergy : '' }}
+            </span>
+          </div>
         </div>
         <div *ngIf="last_scan.count > 0" class="last-scan-count" aria-label="Total checked in for this session">
           <ion-icon name="people-outline" aria-hidden="true"></ion-icon>

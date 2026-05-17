@@ -122,6 +122,40 @@
     }
   }
 
+  // Dietary / allergy chips under the access code. Two flavors:
+  //  - "Kosher" / "Vegan" / "Vegetarian" / "Gluten-Free" (informational,
+  //     so it inherits the card's success color but inverts the
+  //     background so it pops without competing with the headline).
+  //  - "Allergy: nuts" (warning — uses the warning swatch so staff
+  //     never miss it, even against an already-checked-in orange card).
+  .last-scan-dietary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .dietary-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.22);
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.1;
+
+    ion-icon {
+      font-size: 14px;
+    }
+  }
+
+  .dietary-allergy {
+    background: var(--ion-color-warning, #ffc409);
+    color: var(--ion-color-warning-contrast, #000);
+  }
+
   // Running headcount badge on the right side of the last-scan card.
   // Big & high-contrast so door staff can read it at arm's length while
   // moving attendees through the queue.
