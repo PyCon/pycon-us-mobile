@@ -21,6 +21,14 @@ export class DoorCheckPage implements OnInit, OnDestroy {
   // door staff can sanity-check headcount against badge stickers / clicker
   // counts without leaving the app.
   check_in_count: number = 0;
+  // Access codes that have already been counted this scanning session.
+  // Storage-backed alreadySynced has a race window — the listener
+  // re-attaches every 250ms while the operator holds the scanner over a
+  // single badge, but `storeScan` only writes `synced-door-check-*`
+  // AFTER the redeem_products POST round-trips. Without this in-memory
+  // guard the count climbed by 1 every 250ms on a held badge. Reset
+  // alongside check_in_count.
+  counted_codes: Set<string> = new Set();
 
   last_scan: any = null;
   last_scan_timeout: ReturnType<typeof setTimeout> = null;
@@ -117,11 +125,13 @@ export class DoorCheckPage implements OnInit, OnDestroy {
       this.product = null;
       this.productSearch = '';
       this.check_in_count = 0;
+      this.counted_codes = new Set();
       this.detectorRef.detectChanges();
       return;
     }
     this.category = categoryId;
     this.check_in_count = 0;
+    this.counted_codes = new Set();
     this.refreshProducts();
   }
 
@@ -137,6 +147,7 @@ export class DoorCheckPage implements OnInit, OnDestroy {
   selectProduct(productId: any) {
     if (this.product !== productId) {
       this.check_in_count = 0;
+      this.counted_codes = new Set();
     }
     this.product = productId;
     this.detectorRef.detectChanges();
@@ -225,23 +236,31 @@ export class DoorCheckPage implements OnInit, OnDestroy {
     // products that were actually redeemed last time and only call it
     // "already" if any of the products we're currently scanning for
     // overlap.
-    const syncedRaw: any = await this.storage.get('synced-door-check-' + accessCode);
-    let alreadySynced = false;
-    if (syncedRaw?.redeemable_products_by_category && this.scanningProducts?.length) {
-      const syncedProductIds = new Set<number>();
-      Object.values(syncedRaw.redeemable_products_by_category as Record<string, any[]>).forEach((items) => {
-        if (!Array.isArray(items)) return;
-        items.forEach((item: any) => {
-          if (item?.product_id != null) syncedProductIds.add(Number(item.product_id));
+    // In-memory dedup wins — repeat scans of the same badge while the
+    // operator holds the scanner steady (listener re-attaches every
+    // 250ms) are flagged as "already" instantly, without waiting for the
+    // sync POST to round-trip and write `synced-door-check-*`.
+    const countedThisSession = this.counted_codes.has(accessCode);
+    let alreadySynced = countedThisSession;
+    if (!alreadySynced) {
+      const syncedRaw: any = await this.storage.get('synced-door-check-' + accessCode);
+      if (syncedRaw?.redeemable_products_by_category && this.scanningProducts?.length) {
+        const syncedProductIds = new Set<number>();
+        Object.values(syncedRaw.redeemable_products_by_category as Record<string, any[]>).forEach((items) => {
+          if (!Array.isArray(items)) return;
+          items.forEach((item: any) => {
+            if (item?.product_id != null) syncedProductIds.add(Number(item.product_id));
+          });
         });
-      });
-      alreadySynced = this.scanningProducts.some((p: any) => syncedProductIds.has(Number(p)));
+        alreadySynced = this.scanningProducts.some((p: any) => syncedProductIds.has(Number(p)));
+      }
     }
     if (access && quantity > 0) {
       this.storeScan(accessCode, access, productQuantities, scannedCode);
     }
     if (access && quantity > 0 && !alreadySynced) {
       this.check_in_count += 1;
+      this.counted_codes.add(accessCode);
     }
     const diet = this.dietary.get(accessCode);
     this.last_scan = {
