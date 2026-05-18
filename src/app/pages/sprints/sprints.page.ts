@@ -76,7 +76,7 @@ export class SprintsPage implements OnInit {
   }
 
   openSprintsPage() {
-    window.open('https://us.pycon.org/2026/sprints/', '_system', 'location=yes');
+    window.open('https://us.pycon.org/2026/events/dev-sprints/', '_system', 'location=yes');
   }
 
   ngOnInit() {
